@@ -615,7 +615,7 @@ def parse_mac_payload(msg_dir, hex_data):
     else:
         print("      ADRACKReq :", ack)
         print("      ACK       :", ack)
-        print("      RFU       :", fctrl_rfu)
+        print("      ClassB    :", fctrl_rfu)
     print("      FOptsLen  :", foptslen)
     print("    FCnt        (x%s): %d" % (''.join(hex_data[5:7]), fcnt))
 
