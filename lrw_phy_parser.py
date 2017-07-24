@@ -646,21 +646,25 @@ mac_cmd_tab = {
 
 def parse_mac_cmd(msg_dir, hex_data):
     offset = 0
+    n_maccmd = 0
     while offset < len(hex_data):
         cid = hex_data[offset]
         a = mac_cmd_tab.has_key(cid)
         if a:
             t = mac_cmd_tab[cid][msg_dir]
             offset += 1
+            n_maccmd += 1
             if t["octet"] == 0:
-                print("  %s (%slink) [%s]" % (t["name"], msg_dir, cid))
+                print("  %02d. %s (x%s %slink)" % (n_maccmd, t["name"],
+                                                   cid, msg_dir))
             else:
-                print("  %s (%slink) [%s] [%s]" % (t["name"], msg_dir, cid,
-                    ''.join(hex_data[offset:offset+t["octet"]])))
+                print("  %02d. %s (x%s %slink) [%s]" % (
+                        n_maccmd, t["name"], cid, msg_dir,
+                        ''.join(hex_data[offset:offset+t["octet"]])))
             t["parser"](hex_data[offset:])
             offset += t["octet"]
         else:
-            print("ERROR: Proprietary command [%s] has been found." %
+            print("ERROR: Proprietary MAC command [%s] has been found." %
                   hex_data[offset])
             raise("")
 
@@ -804,7 +808,7 @@ encrypted and must not exceed the maximum FRMPayload length.
         offset += foptslen
         fopts = hex_data[fopts_offset:offset]
         print("    FOpts       (x%s)" % (''.join(fopts)))
-        print("## MAC Command (FOpts)")
+        print("## MAC Command (No. CMD (CID DIR) [MSG])")
         parse_mac_cmd(msg_dir, fopts)
     rest_len = len(hex_data[offset:])
     if rest_len:
