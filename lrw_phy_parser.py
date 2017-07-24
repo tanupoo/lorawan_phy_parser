@@ -718,41 +718,41 @@ MACPayload parser
     DevAddr | FCtrl | FCnt | FOpts
 
 - FCtrl for downlink
-     7  |  6  |  5  |    4     |   3...0
-    ADR | RFU | ACK | FPending | FOptsLen
+     7  |    6   |  5  |    4     |   3...0
+    ADR |   RFU  | ACK | FPending | FOptsLen
 
 - FCtrl for uplink
-     7  |     6     |  5  |  4  |   3...0
-    ADR | ADRACKReq | ACK | RFU | FOptsLen
+     7  |    6   |  5  |    4     |   3...0
+        |   ADR  |     |  RFT or  |
+    ADR | ACKReq | ACK | Class B  | FOptsLen
 '''
 def parse_mac_payload(msg_dir, hex_data):
     devaddr = ''.join(hex_data[0:4][::-1])
     fctrl = hex_data[4]
     fctrl_bin = bin(int(fctrl, 16))[2:].zfill(8)
+    print("  FHDR          (x%s)" % (''.join(hex_data)))
+    print("    DevAddr     (x%s): %s" % (''.join(hex_data[:4]), devaddr))
+    print("    FCtrl       (b%s): %s" % (fctrl_bin, fctrl))
+    #
     adr = fctrl_bin[0:1]
+    print("      ADR       :", adr)
     if msg_dir == MSGDIR_DOWN:
         fctrl_rfu = fctrl_bin[1:2]
         ack = fctrl_bin[2:3]
         fpending = fctrl_bin[3:4]
-    else:
-        adrackreq = fctrl_bin[1:2]
-        ack = fctrl_bin[2:3]
-        fctrl_rfu = fctrl_bin[3:4]
-    foptslen = int(fctrl_bin[4:], 2)
-    fcnt = int(''.join(hex_data[5:7][::-1]), 16)
-    #
-    print("  FHDR          (x%s)" % (''.join(hex_data)))
-    print("    DevAddr     (x%s): %s" % (''.join(hex_data[:4]), devaddr))
-    print("    FCtrl       (b%s): %s" % (fctrl_bin, fctrl))
-    print("      ADR       :", adr)
-    if msg_dir == MSGDIR_DOWN:
         print("      RFU       :", fctrl_rfu)
         print("      ACK       :", ack)
         print("      FPending  :", fpending)
     else:
-        print("      ADRACKReq :", ack)
+        adrackreq = fctrl_bin[1:2]
+        ack = fctrl_bin[2:3]
+        fctrl_rfu_classb = fctrl_bin[3:4]
+        print("      ADRACKReq :", acrackreq)
         print("      ACK       :", ack)
-        print("      ClassB    :", fctrl_rfu)
+        print("      RFU/ClsB  :", fctrl_rfu_classb)
+    #
+    foptslen = int(fctrl_bin[4:], 2)
+    fcnt = int(''.join(hex_data[5:7][::-1]), 16)
     print("      FOptsLen  :", foptslen)
     print("    FCnt        (x%s): %d" % (''.join(hex_data[5:7]), fcnt))
 
