@@ -16,8 +16,14 @@ def print_detail(text):
     indent = "     ** Detail :"
     print(indent, text.strip())
 
+def parse_maccmd_ResetInd(hex_data):
+    print("    NOT YET IMPLEMENTED.")
+
+def parse_maccmd_ResetConf(hex_data):
+    print("    NOT YET IMPLEMENTED.")
+
 def parse_maccmd_LinkCheckReq(hex_data):
-    pass
+    print("    NOT YET IMPLEMENTED.")
 
 def parse_maccmd_LinkCheckAns(hex_data):
     offset = 0
@@ -136,15 +142,15 @@ def parse_maccmd_DutyCycleReq(hex_data):
     #
     cycle = bin(int(hex_data[offset], 16))[2:].zfill(8)
     print("    DutyCyclePL:", hex_data[offset])
-    print("      RFU:", status[0:4])
-    print("      MaxDCycle:", status[4])
+    print("      RFU:", cycle[0:4])
+    print("      MaxDCycle:", cycle[4])
     print_detail("""
 A value of 0 corresponds to no duty cycle
 limitation except the one set by the regional regulation.
 """)
 
 def parse_maccmd_DutyCycleAns(hex_data):
-    pass
+    print("    NOT YET IMPLEMENTED.")
 
 def parse_maccmd_RXParamSetupReq(hex_data):
     offset = 0
@@ -216,7 +222,7 @@ RX1DRoffset was successfully set.
 """)
 
 def parse_maccmd_DevStatusReq(hex_data):
-    pass
+    print("    NOT YET IMPLEMENTED.")
 
 def parse_maccmd_DevStatusAns(hex_data):
     offset = 0
@@ -332,7 +338,7 @@ the value of 15 indicates 15 (s).
 """)
 
 def parse_maccmd_RXTimingSetupAns(hex_data):
-    pass
+    print("    NOT YET IMPLEMENTED.")
 
 def parse_maccmd_TxParamSetupReq(hex_data):
     offset = 0
@@ -344,7 +350,7 @@ def parse_maccmd_TxParamSetupReq(hex_data):
     print("    MaxEIRP:", DwellTime[4:])
 
 def parse_maccmd_TxParamSetupAns(hex_data):
-    pass
+    print("    NOT YET IMPLEMENTED.")
 
 def parse_maccmd_DlChannelReq(hex_data):
     offset = 0
@@ -394,6 +400,52 @@ The device cannot use this frequency.
 The device is able to use this frequency.
 """)
 
+#
+# Class B Mac Command Parsers
+#
+def parse_maccmd_PingSlotInfoReq(hex_data):
+    offset = 0
+    #
+    period = bin(int(hex_data[offset], 16))[2:].zfill(8)
+    print("    PingSlotParam:", hex_data[offset])
+    print("      RFU:", period[0:4])
+    print("      Periodicity:", period[5:7])
+    print_detail("""
+Periodicity = 0 means that the end-device opens a ping slot every second.
+Periodicity = 7, every 128 seconds which is the
+maximum ping period supported by the LoRaWAN Class B specification.
+""")
+
+def parse_maccmd_PingSlotInfoAns(hex_data):
+    print("    NOT YET IMPLEMENTED.")
+
+def parse_maccmd_PingSlotChannelReq(hex_data):
+    print("    NOT YET IMPLEMENTED.")
+
+def parse_maccmd_PingSlotChannelAns(hex_data):
+    print("    NOT YET IMPLEMENTED.")
+
+def parse_maccmd_BeaconTimingReq(hex_data):
+    print("    Deprecated.")
+
+def parse_maccmd_BeaconTimingAns(hex_data):
+    print("    Deprecated.")
+
+def parse_maccmd_BeaconFreqReq(hex_data):
+    print("    NOT YET IMPLEMENTED.")
+
+def parse_maccmd_BeaconFreqAns(hex_data):
+    print("    NOT YET IMPLEMENTED.")
+
+#
+# Class C Mac Command Parsers
+#
+def parse_maccmd_DeviceModeInd(hex_data):
+    print("    NOT YET IMPLEMENTED.")
+
+def parse_maccmd_DeviceModeConf(hex_data):
+    print("    NOT YET IMPLEMENTED.")
+
 '''
 Table for MAC Command Parser
     name: MAC command name
@@ -401,6 +453,21 @@ Table for MAC Command Parser
     parser: function name.
 '''
 mac_cmd_tab = {
+    #
+    # Class A Mac Command
+    #
+    "01": {
+        MSGDIR_UP: {
+            "name": "ResetInd",
+            "octet": 1,
+            "parser": parse_maccmd_ResetInd
+        },
+        MSGDIR_DOWN: {
+            "name": "ResetConf",
+            "octet": 1,
+            "parser": parse_maccmd_ResetConf
+        }
+    },
     "02": {
         MSGDIR_UP: {
             "name": "LinkCheckReq",
@@ -507,6 +574,72 @@ mac_cmd_tab = {
             "name": "DlChannelReq",
             "octet": 4,
             "parser": parse_maccmd_DlChannelReq
+        }
+    },
+    #
+    # Class B Mac Command
+    #
+    "10": {
+        MSGDIR_UP: {
+            "name": "PingSlotInfoReq",
+            "octet": 1,
+            "parser": parse_maccmd_PingSlotInfoReq
+        },
+        MSGDIR_DOWN: {
+            "name": "PingSlotInfoAns",
+            "octet": 0,
+            "parser": parse_maccmd_PingSlotInfoAns
+        }
+    },
+    "11": {
+        MSGDIR_UP: {
+            "name": "PingSlotChannelAns",
+            "octet": 4,
+            "parser": parse_maccmd_PingSlotChannelAns
+        },
+        MSGDIR_DOWN: {
+            "name": "PingSlotChannelReq",
+            "octet": 1,
+            "parser": parse_maccmd_PingSlotChannelReq
+        }
+    },
+    "12": {
+        MSGDIR_UP: {
+            "name": "BeaconTimingReq",
+            "octet": 0,
+            "parser": parse_maccmd_BeaconTimingReq
+        },
+        MSGDIR_DOWN: {
+            "name": "BeaconTimingAns",
+            "octet": 0,
+            "parser": parse_maccmd_BeaconTimingAns
+        }
+    },
+    "13": {
+        MSGDIR_UP: {
+            "name": "BeaconFreqAns",
+            "octet": 1,
+            "parser": parse_maccmd_BeaconFreqAns
+        },
+        MSGDIR_DOWN: {
+            "name": "BeaconFreqReq",
+            "octet": 3,
+            "parser": parse_maccmd_BeaconFreqReq
+        }
+    },
+    #
+    # Class C Mac Command
+    #
+    "20": {
+        MSGDIR_UP: {
+            "name": "DeviceModeInd",
+            "octet": 1,
+            "parser": parse_maccmd_DeviceModeInd
+        },
+        MSGDIR_DOWN: {
+            "name": "DeviceModeConf",
+            "octet": 1,
+            "parser": parse_maccmd_DeviceModeConf
         }
     }
     }
