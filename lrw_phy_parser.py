@@ -776,7 +776,7 @@ def parse_mac_payload(msg_dir, hex_data):
         adrackreq = fctrl_bin[1:2]
         ack = fctrl_bin[2:3]
         fctrl_rfu_classb = fctrl_bin[3:4]
-        print("      ADRACKReq :", acrackreq)
+        print("      ADRACKReq :", arrackreq)
         print("      ACK       :", ack)
         print("      RFU/ClsB  :", fctrl_rfu_classb)
     #
@@ -948,14 +948,14 @@ test code
 if __name__ == '__main__' :
     if len(sys.argv) == 1:
         hex_data = sys.stdin.readline().strip()
-    elif sys.argv[1] in ["-h", "--help"] or len(sys.argv) != 2:
+    elif sys.argv[1] in ["-h", "--help"]:
         print("Usage: %s (hex)" % (sys.argv[0]))
         print("    You can use stdin to pass the hex string as well.")
         exit(1)
     elif sys.argv[1] == "test":
         hex_data = "402105810080160102a6bf4432169ea0784416868d9420dd244619443e"
     else:
-        hex_data = sys.argv[1]
+        hex_data = ''.join(sys.argv[1:])
     print("=== PHYPayload ===")
     parse_phy_payload(hexstr2array(hex_data))
 
