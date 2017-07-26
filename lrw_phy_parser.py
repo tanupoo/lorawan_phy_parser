@@ -776,7 +776,7 @@ def parse_mac_payload(msg_dir, hex_data):
         adrackreq = fctrl_bin[1:2]
         ack = fctrl_bin[2:3]
         fctrl_rfu_classb = fctrl_bin[3:4]
-        print("      ADRACKReq :", arrackreq)
+        print("      ADRACKReq :", adrackreq)
         print("      ACK       :", ack)
         print("      RFU/ClsB  :", fctrl_rfu_classb)
     #
