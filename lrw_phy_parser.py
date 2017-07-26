@@ -761,10 +761,10 @@ def parse_mhdr(hex_data):
     mtype_cmd = get_mtype_cmd(mtype)
     mhdr_rfu = mhdr_bin[3:6]
     major = mhdr_bin[6:]
-    print("## MHDR        (x%s): b%s" % (mhdr, mhdr_bin))
-    print("  MType     (b%s): %s" % (mtype, get_mtype_cmd(mtype)))
-    print("  RFU       (b%s):" % mhdr_rfu)
-    print("  Major     (b%s): %s" % (major, get_major(major)))
+    print("## MHDR     [x%s] [b%s]" % (mhdr, mhdr_bin))
+    print("  MType     : %s [b%s]" % (get_mtype_cmd(mtype), mtype))
+    print("  RFU       : [b%s]" % mhdr_rfu)
+    print("  Major     : %s [b%s]" % (get_major(major), major))
     #
     return mtype
 
@@ -791,31 +791,31 @@ def parse_mac_payload(msg_dir, hex_data):
     devaddr = ''.join(hex_data[0:4][::-1])
     fctrl = hex_data[4]
     fctrl_bin = bin(int(fctrl, 16))[2:].zfill(8)
-    print("  FHDR          (x%s)" % (''.join(hex_data)))
-    print("    DevAddr     (x%s): %s" % (''.join(hex_data[:4]), devaddr))
-    print("    FCtrl       (b%s): %s" % (fctrl_bin, fctrl))
+    print("  FHDR          [x%s]" % (''.join(hex_data)))
+    print("    DevAddr     : %s [x%s]" % (devaddr, ''.join(hex_data[:4])))
+    print("    FCtrl       : [x%s] [b%s]" % (fctrl, fctrl_bin))
     #
-    adr = fctrl_bin[0:1]
-    print("      ADR       :", adr)
+    adr = int(fctrl_bin[0:1])
+    print("      ADR       : %d" % adr)
     if msg_dir == MSGDIR_DOWN:
         fctrl_rfu = fctrl_bin[1:2]
-        ack = fctrl_bin[2:3]
-        fpending = fctrl_bin[3:4]
-        print("      RFU       :", fctrl_rfu)
-        print("      ACK       :", ack)
-        print("      FPending  :", fpending)
+        ack = int(fctrl_bin[2:3])
+        fpending = int(fctrl_bin[3:4])
+        print("      RFU       : %s" % fctrl_rfu)
+        print("      ACK       : %d" % ack)
+        print("      FPending  : %d" % fpending)
     else:
-        adrackreq = fctrl_bin[1:2]
-        ack = fctrl_bin[2:3]
-        fctrl_rfu_classb = fctrl_bin[3:4]
-        print("      ADRACKReq :", adrackreq)
-        print("      ACK       :", ack)
-        print("      RFU/ClsB  :", fctrl_rfu_classb)
+        adrackreq = int(fctrl_bin[1:2])
+        ack = int(fctrl_bin[2:3])
+        fctrl_rfu_classb = int(fctrl_bin[3:4])
+        print("      ADRACKReq : %d" % adrackreq)
+        print("      ACK       : %d" % ack)
+        print("      RFU/ClsB  : %d" % fctrl_rfu_classb)
     #
     foptslen = int(fctrl_bin[4:], 2)
     fcnt = int(''.join(hex_data[5:7][::-1]), 16)
-    print("      FOptsLen  :", foptslen)
-    print("    FCnt        (x%s): %d" % (''.join(hex_data[5:7]), fcnt))
+    print("      FOptsLen  : %d [b%s]" % (foptslen, fctrl_bin[4:]))
+    print("    FCnt        : %d [x%s]" % (fcnt, ''.join(hex_data[5:7])))
 
     '''
 ## FOptsLen, FOpts, FPort, FRMPayload
@@ -868,13 +868,13 @@ encrypted and must not exceed the maximum FRMPayload length.
     if foptslen:
         offset += foptslen
         fopts = hex_data[fopts_offset:offset]
-        print("    FOpts       (x%s)" % (''.join(fopts)))
+        print("    FOpts       [x%s]" % (''.join(fopts)))
         print("## MAC Command (No. CMD (CID DIR) [MSG])")
         parse_mac_cmd(msg_dir, fopts)
     rest_len = len(hex_data[offset:])
     if rest_len:
         fport = hex_data[offset]
-        print("## FPort       (x%s): %d" % (fport, int(fport, 16)))
+        print("## FPort       : %d [x%s]" % (int(fport, 16), fport))
         offset += 1
         rest_len -= 1
         if int(fport) == 0:
