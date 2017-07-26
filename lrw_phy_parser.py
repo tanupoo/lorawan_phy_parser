@@ -761,10 +761,10 @@ def parse_mhdr(hex_data):
     mtype_cmd = get_mtype_cmd(mtype)
     mhdr_rfu = mhdr_bin[3:6]
     major = mhdr_bin[6:]
-    print("## MHDR     [x%s] [b%s]" % (mhdr, mhdr_bin))
-    print("  MType     : %s [b%s]" % (get_mtype_cmd(mtype), mtype))
-    print("  RFU       : [b%s]" % mhdr_rfu)
-    print("  Major     : %s [b%s]" % (get_major(major), major))
+    print("## MHDR           [x%s] [b%s]" % (mhdr, mhdr_bin))
+    print("  MType         : %s [b%s]" % (get_mtype_cmd(mtype), mtype))
+    print("  RFU           : [b%s]" % mhdr_rfu)
+    print("  Major         : %s [b%s]" % (get_major(major), major))
     #
     return mtype
 
@@ -791,7 +791,7 @@ def parse_mac_payload(msg_dir, hex_data):
     devaddr = ''.join(hex_data[0:4][::-1])
     fctrl = hex_data[4]
     fctrl_bin = bin(int(fctrl, 16))[2:].zfill(8)
-    print("  FHDR          [x%s]" % (''.join(hex_data)))
+    print("  FHDR            [x%s]" % (''.join(hex_data)))
     print("    DevAddr     : %s [x%s]" % (devaddr, ''.join(hex_data[:4])))
     print("    FCtrl       : [x%s] [b%s]" % (fctrl, fctrl_bin))
     #
@@ -868,13 +868,13 @@ encrypted and must not exceed the maximum FRMPayload length.
     if foptslen:
         offset += foptslen
         fopts = hex_data[fopts_offset:offset]
-        print("    FOpts       [x%s]" % (''.join(fopts)))
+        print("    FOpts         [x%s]" % (''.join(fopts)))
         print("## MAC Command (No. CMD (CID DIR) [MSG])")
         parse_mac_cmd(msg_dir, fopts)
     rest_len = len(hex_data[offset:])
     if rest_len:
         fport = hex_data[offset]
-        print("## FPort       : %d [x%s]" % (int(fport, 16), fport))
+        print("## FPort        : %d [x%s]" % (int(fport, 16), fport))
         offset += 1
         rest_len -= 1
         if int(fport) == 0:
@@ -968,7 +968,7 @@ def parse_phy_payload(hex_data):
         print("## MACPayload")
         rest_len = parse_mac_payload(msg_dir, payload)
         if rest_len:
-            print("## FRMPayload:", ''.join(payload[-rest_len:]))
+            print("## FRMPayload   :", ''.join(payload[-rest_len:]))
     #
     print("## MIC          : x%s" % (''.join(mic))) # XXX endian ?
 
