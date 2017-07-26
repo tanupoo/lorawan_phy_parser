@@ -23,7 +23,8 @@ def parse_maccmd_ResetConf(hex_data):
     print("    NOT YET IMPLEMENTED.")
 
 def parse_maccmd_LinkCheckReq(hex_data):
-    print("    NOT YET IMPLEMENTED.")
+    # zero length
+    pass
 
 def parse_maccmd_LinkCheckAns(hex_data):
     offset = 0
@@ -150,7 +151,8 @@ limitation except the one set by the regional regulation.
 """)
 
 def parse_maccmd_DutyCycleAns(hex_data):
-    print("    NOT YET IMPLEMENTED.")
+    # zero length
+    pass
 
 def parse_maccmd_RXParamSetupReq(hex_data):
     offset = 0
@@ -222,7 +224,8 @@ RX1DRoffset was successfully set.
 """)
 
 def parse_maccmd_DevStatusReq(hex_data):
-    print("    NOT YET IMPLEMENTED.")
+    # zero length
+    pass
 
 def parse_maccmd_DevStatusAns(hex_data):
     offset = 0
@@ -338,7 +341,8 @@ the value of 15 indicates 15 (s).
 """)
 
 def parse_maccmd_RXTimingSetupAns(hex_data):
-    print("    NOT YET IMPLEMENTED.")
+    # zero length
+    pass
 
 def parse_maccmd_TxParamSetupReq(hex_data):
     offset = 0
@@ -350,7 +354,8 @@ def parse_maccmd_TxParamSetupReq(hex_data):
     print("    MaxEIRP:", DwellTime[4:])
 
 def parse_maccmd_TxParamSetupAns(hex_data):
-    print("    NOT YET IMPLEMENTED.")
+    # zero length
+    pass
 
 def parse_maccmd_DlChannelReq(hex_data):
     offset = 0
@@ -417,7 +422,8 @@ maximum ping period supported by the LoRaWAN Class B specification.
 """)
 
 def parse_maccmd_PingSlotInfoAns(hex_data):
-    print("    NOT YET IMPLEMENTED.")
+    # zero length
+    pass
 
 def parse_maccmd_PingSlotChannelReq(hex_data):
     print("    NOT YET IMPLEMENTED.")
@@ -426,16 +432,39 @@ def parse_maccmd_PingSlotChannelAns(hex_data):
     print("    NOT YET IMPLEMENTED.")
 
 def parse_maccmd_BeaconTimingReq(hex_data):
-    print("    Deprecated.")
+    print("    DEPRECATED.")
 
 def parse_maccmd_BeaconTimingAns(hex_data):
-    print("    Deprecated.")
+    print("    DEPRECATED.")
 
 def parse_maccmd_BeaconFreqReq(hex_data):
-    print("    NOT YET IMPLEMENTED.")
+    Freq = int(hex_data[offset], 16)
+    print_detail("""
+Frequency is a 24bits unsigned integer. The actual beacon
+channel frequency in Hz is 100 x frequ. This allows defining
+the beacon channel anywhere between 100 MHz to 1.67 GHz
+by 100 Hz step. The end-device has to check that the frequency
+is actually allowed by its radio hardware and return an error otherwise.
+A valid non-zero Frequency will force the device to listen
+to the beacon on a fixed frequency channel even if the default
+behavior specifies a frequency hopping beacon (i.e US ISM band).
+A value of 0 instructs the end-device to use the default
+beacon frequency plan as defined in the "Beacon physical layer" section.
+Where applicable the device resumes frequency hopping beacon search.
+""")
 
 def parse_maccmd_BeaconFreqAns(hex_data):
-    print("    NOT YET IMPLEMENTED.")
+    offset = 0
+    #
+    status = bin(int(hex_data[offset], 16))[2:].zfill(8)
+    print("    Status:", hex_data[offset])
+    print("      RFU:", status[0:6])
+    print("      Beacon frequency ok:", period[6:7])
+    print_detail("""
+Bit=0: The device cannot use this frequency, the previous beacon frequency is
+kept.
+Bit=1: The beacon frequency has been changed
+""")
 
 #
 # Class C Mac Command Parsers
@@ -606,7 +635,7 @@ mac_cmd_tab = {
     "12": {
         MSGDIR_UP: {
             "name": "BeaconTimingReq",
-            "octet": 0,
+            "octet": 3,
             "parser": parse_maccmd_BeaconTimingReq
         },
         MSGDIR_DOWN: {
