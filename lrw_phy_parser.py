@@ -62,22 +62,22 @@ def parse_maccmd_LinkCheckAns(hex_data):
     offset = 0
     #
     Margin = int(hex_data[offset], 16)
-    print("    Margin: %d (%s)" % (Margin, hex_data[offset]))
+    print("    Margin: %d [%s]" % (Margin, hex_data[offset]))
     print_detail("""
-The link margin in dB of the last successfully received
-LinkCheckReq command.
-A value of 0 means that the frame was received at the
-demodulation floor (0 dB or no 28 margin) while a value of 20,
-for example, means that the frame reached the gateway 20 dB
-above the demodulation floor. Value 255 is reserved.
+The demodulation margin (Margin) is an 8-bit unsigned integer
+in the range of 0..254
+indicating the link margin in dB of the last successfully
+received LinkCheckReq command.
+A value of 0 means that the frame was received at the demodulation floor
+(0 dB or no 948 margin) 
 """)
     offset += 1
     #
     GwCnt = int(hex_data[offset], 16)
-    print("    GwCnt: %d (%s)" % (GwCnt, hex_data[offset]))
+    print("    GwCnt: %d [x%s]" % (GwCnt, hex_data[offset]))
     print_detail("""
-the number of gateways that successfully received the
-last 31 LinkCheckReq command."
+The gateway count (GwCnt) is the number of gateways that successfully
+received the last LinkCheckReq command.
 """)
 
 def parse_maccmd_LinkADRReq(hex_data):
@@ -945,6 +945,8 @@ PHYPayload parser
     MHDR |   JoinRes  | MIC
 '''
 def parse_phy_payload(hex_data):
+    print("=== PHYPayload ===")
+    print("[x %s]" % ' '.join(hex_data))
     # payload: i.e. MACPayload, Join Req, JoinRes
     payload_len = len(hex_data) - MIC_LEN
     payload = hex_data[1:payload_len]
@@ -974,6 +976,15 @@ def parse_phy_payload(hex_data):
 def hexstr2array(hexstr):
     return [ hexstr[i:i+2] for i in range(0,len(hexstr),2) ]
 
+def test_regress():
+    v = [
+        "402105810080160102a6bf4432169ea0784416868d9420dd244619443e",
+        "40C1D25201A5050003070703120864FE226A9E"
+        ]
+    for d in v:
+        parse_phy_payload(hexstr2array(d))
+    exit(1)
+
 '''
 test code
 '''
@@ -985,9 +996,9 @@ if __name__ == '__main__' :
         print("    You can use stdin to pass the hex string as well.")
         exit(1)
     elif sys.argv[1] == "test":
-        hex_data = "402105810080160102a6bf4432169ea0784416868d9420dd244619443e"
+        test_regress()
+        exit(1)
     else:
         hex_data = ''.join(sys.argv[1:])
-    print("=== PHYPayload ===")
     parse_phy_payload(hexstr2array(hex_data))
 
