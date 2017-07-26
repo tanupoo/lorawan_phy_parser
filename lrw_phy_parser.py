@@ -22,22 +22,22 @@ def print_detail(text):
     indent = "     ** Detail :"
     print(indent, text.strip())
 
-def subparse_maccmd_ServDev_LoRaWAN_version(hex_data):
-    minver = bin(int(hex_data[0], 16))[2:].zfill(8)
-    vn= int(minver, 2)
-    if vn == 1:
+def parse_maccmd_ServDev_LoRaWAN_version(x_Dev_LoRaWAN_version):
+    b_Dev_LoRaWAN_version = hex2bin(x_Dev_LoRaWAN_version)
+    b_Minor = hex2bin(b_Dev_LoRaWAN_version[4:])
+    if int(b_Minor, 2) == 1:
         vs = "LoRaWAN x.1"
     else:
         vs = "RFU"
-    return vs, vn, minver
+    print("    Dev_LoRaWAN_version: [b%s] [x%s]" % (b_Dev_LoRaWAN_version,
+                                                    x_Dev_LoRaWAN_version))
+    print("      Minor: %s [b%s]" % (vs, b_Minor))
 
 def parse_maccmd_ResetInd(hex_data):
     print("    IS SUPPORTED BY V1.1 OR LATER.")
     offset = 0
     #
-    vs, vn, minver = subparse_maccmd_ServDev_LoRaWAN_version(hex_data)
-    print("    ResetInd Payload:", hex_data[offset])
-    print("      Dev LoRaWAN version: %s [%s]" % (vs, minver))
+    parse_maccmd_ServDev_LoRaWAN_version(hex_data[offset])
     print_detail("""
 This MAC command is only available to ABP devices activated on a LoRaWAN1.1
 compatible network server. LoRaWAN1.0 servers do not implement this MAC
@@ -52,9 +52,7 @@ def parse_maccmd_ResetConf(hex_data):
     print("    IS SUPPORTED BY V1.1 OR LATER.")
     offset = 0
     #
-    vs, vn, minver = subparse_maccmd_ServDev_LoRaWAN_version(hex_data)
-    print("    ResetConf Payload:", hex_data[offset])
-    print("      Serv LoRaWAN version: %s [%s]" % (vs, minver))
+    parse_maccmd_ServDev_LoRaWAN_version(hex_data[offset])
     print_detail("""
 The server's version carried by the ResetConf must be the same
 than the device's version.  Any other value is invalid.
@@ -67,8 +65,9 @@ def parse_maccmd_LinkCheckReq(hex_data):
 def parse_maccmd_LinkCheckAns(hex_data):
     offset = 0
     #
-    Margin = int(hex_data[offset], 16)
-    print("    Margin: %d [%s]" % (Margin, hex_data[offset]))
+    x_Margin = hex_data[offset]
+    i_Margin = int(x_Margin, 16)
+    print("    Margin: %d [x%s]" % (i_Margin, x_Margin))
     print_detail("""
 The demodulation margin (Margin) is an 8-bit unsigned integer
 in the range of 0..254
@@ -79,8 +78,9 @@ A value of 0 means that the frame was received at the demodulation floor
 """)
     offset += 1
     #
-    GwCnt = int(hex_data[offset], 16)
-    print("    GwCnt: %d [x%s]" % (GwCnt, hex_data[offset]))
+    x_GwCnt = hex_data[offset]
+    i_GwCnt = int(x_GwCnt, 16)
+    print("    GwCnt: %d [x%s]" % (i_GwCnt, x_GwCnt))
     print_detail("""
 The gateway count (GwCnt) is the number of gateways that successfully
 received the last LinkCheckReq command.
