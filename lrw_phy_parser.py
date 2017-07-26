@@ -17,7 +17,7 @@ def print_detail(text):
     print(indent, text.strip())
 
 def subparse_maccmd_ServDev_LoRaWAN_version(hex_data):
-    minver = (bin(int(hex_data, 16))[2:].zfill(8))[4:]
+    minver = bin(int(hex_data[0], 16))[2:].zfill(8)
     vn= int(minver, 2)
     if vn == 1:
         vs = "LoRaWAN x.1"
@@ -26,7 +26,7 @@ def subparse_maccmd_ServDev_LoRaWAN_version(hex_data):
     return vs, vn, minver
 
 def parse_maccmd_ResetInd(hex_data):
-    print("    IS NOT SUPPORTED BY V1.0.")
+    print("    IS SUPPORTED BY V1.1 OR LATER.")
     offset = 0
     #
     vs, vn, minver = subparse_maccmd_ServDev_LoRaWAN_version(hex_data)
@@ -43,7 +43,7 @@ that he has switched back to its default MAC & radio parameters
 """)
 
 def parse_maccmd_ResetConf(hex_data):
-    print("    IS NOT SUPPORTED BY V1.0.")
+    print("    IS SUPPORTED BY V1.1 OR LATER.")
     offset = 0
     #
     vs, vn, minver = subparse_maccmd_ServDev_LoRaWAN_version(hex_data)
