@@ -16,11 +16,43 @@ def print_detail(text):
     indent = "     ** Detail :"
     print(indent, text.strip())
 
+def subparse_maccmd_ServDev_LoRaWAN_version(hex_data):
+    minver = (bin(int(hex_data, 16))[2:].zfill(8))[4:]
+    vn= int(minver, 2)
+    if vn == 1:
+        vs = "LoRaWAN x.1"
+    else:
+        vs = "RFU"
+    return vs, vn, minver
+
 def parse_maccmd_ResetInd(hex_data):
-    print("    NOT YET IMPLEMENTED.")
+    print("    IS NOT SUPPORTED BY V1.0.")
+    offset = 0
+    #
+    vs, vn, minver = subparse_maccmd_ServDev_LoRaWAN_version(hex_data)
+    print("    ResetInd Payload:", hex_data[offset])
+    print("      Dev LoRaWAN version: %s [%s]" % (vs, minver))
+    print_detail("""
+This MAC command is only available to ABP devices activated on a LoRaWAN1.1
+compatible network server. LoRaWAN1.0 servers do not implement this MAC
+command OTA devices MUST NOT implement this command. The network server SHALL
+ignore the ResetInd command coming from an OTA device.
+With the ResetInd command, an ABP end-device indicates to the network
+that it has been re-initialized and
+that he has switched back to its default MAC & radio parameters
+""")
 
 def parse_maccmd_ResetConf(hex_data):
-    print("    NOT YET IMPLEMENTED.")
+    print("    IS NOT SUPPORTED BY V1.0.")
+    offset = 0
+    #
+    vs, vn, minver = subparse_maccmd_ServDev_LoRaWAN_version(hex_data)
+    print("    ResetConf Payload:", hex_data[offset])
+    print("      Serv LoRaWAN version: %s [%s]" % (vs, minver))
+    print_detail("""
+The server's version carried by the ResetConf must be the same
+than the device's version.  Any other value is invalid.
+""")
 
 def parse_maccmd_LinkCheckReq(hex_data):
     # zero length
