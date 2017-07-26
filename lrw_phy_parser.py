@@ -478,7 +478,7 @@ def parse_maccmd_DeviceModeConf(hex_data):
 '''
 Table for MAC Command Parser
     name: MAC command name
-    octet: content size in octet.
+    size: content size in size.
     parser: function name.
 '''
 mac_cmd_tab = {
@@ -488,120 +488,120 @@ mac_cmd_tab = {
     "01": {
         MSGDIR_UP: {
             "name": "ResetInd",
-            "octet": 1,
+            "size": 1,
             "parser": parse_maccmd_ResetInd
         },
         MSGDIR_DOWN: {
             "name": "ResetConf",
-            "octet": 1,
+            "size": 1,
             "parser": parse_maccmd_ResetConf
         }
     },
     "02": {
         MSGDIR_UP: {
             "name": "LinkCheckReq",
-            "octet": 0,
+            "size": 0,
             "parser": parse_maccmd_LinkCheckReq
         },
         MSGDIR_DOWN: {
             "name": "LinkCheckAns",
-            "octet": 2,
+            "size": 2,
             "parser": parse_maccmd_LinkCheckAns
         }
     },
     "03": {
         MSGDIR_UP: {
             "name": "LinkADRAns",
-            "octet": 1,
+            "size": 1,
             "parser": parse_maccmd_LinkADRAns
         },
         MSGDIR_DOWN: {
             "name": "LinkADRReq",
-            "octet": 4,
+            "size": 4,
             "parser": parse_maccmd_LinkADRReq
         }
     },
     "04": {
         MSGDIR_UP: {
             "name": "DutyCycleAns",
-            "octet": 0,
+            "size": 0,
             "parser": parse_maccmd_DutyCycleAns
         },
         MSGDIR_DOWN: {
             "name": "DutyCycleReq",
-            "octet": 1,
+            "size": 1,
             "parser": parse_maccmd_DutyCycleReq
         }
     },
     "05": {
         MSGDIR_UP: {
             "name": "RXParamSetupAns",
-            "octet": 1,
+            "size": 1,
             "parser": parse_maccmd_RXParamSetupAns
         },
         MSGDIR_DOWN: {
             "name": "RXParamSetupReq",
-            "octet": 4,
+            "size": 4,
             "parser": parse_maccmd_RXParamSetupReq
         }
     },
     "06": {
         MSGDIR_UP: {
             "name": "DevStatusAns",
-            "octet": 2,
+            "size": 2,
             "parser": parse_maccmd_DevStatusAns
         },
         MSGDIR_DOWN: {
             "name": "DevStatusReq",
-            "octet": 0,
+            "size": 0,
             "parser": parse_maccmd_DevStatusReq
         }
     },
     "07": {
         MSGDIR_UP: {
             "name": "NewChannelAns",
-            "octet": 1,
+            "size": 1,
             "parser": parse_maccmd_NewChannelAns
         },
         MSGDIR_DOWN: {
             "name": "NewChannelReq",
-            "octet": 5,
+            "size": 5,
             "parser": parse_maccmd_NewChannelReq
         }
     },
     "08": {
         MSGDIR_UP: {
             "name": "RXTimingSetupAns",
-            "octet": 0,
+            "size": 0,
             "parser": parse_maccmd_RXTimingSetupAns
         },
         MSGDIR_DOWN: {
             "name": "RXTimingSetupReq",
-            "octet": 1,
+            "size": 1,
             "parser": parse_maccmd_RXTimingSetupReq
         }
     },
     "09": {
         MSGDIR_UP: {
             "name": "TxParamSetupAns",
-            "octet": 0,
+            "size": 0,
             "parser": parse_maccmd_TxParamSetupAns
         },
         MSGDIR_DOWN: {
             "name": "TxParamSetupReq",
-            "octet": 1,
+            "size": 1,
             "parser": parse_maccmd_TxParamSetupReq
         }
     },
     "0a": {
         MSGDIR_UP: {
             "name": "DlChannelAns",
-            "octet": 1,
+            "size": 1,
             "parser": parse_maccmd_DlChannelAns
         },
         MSGDIR_DOWN: {
             "name": "DlChannelReq",
-            "octet": 4,
+            "size": 4,
             "parser": parse_maccmd_DlChannelReq
         }
     },
@@ -611,48 +611,48 @@ mac_cmd_tab = {
     "10": {
         MSGDIR_UP: {
             "name": "PingSlotInfoReq",
-            "octet": 1,
+            "size": 1,
             "parser": parse_maccmd_PingSlotInfoReq
         },
         MSGDIR_DOWN: {
             "name": "PingSlotInfoAns",
-            "octet": 0,
+            "size": 0,
             "parser": parse_maccmd_PingSlotInfoAns
         }
     },
     "11": {
         MSGDIR_UP: {
             "name": "PingSlotChannelAns",
-            "octet": 4,
+            "size": 4,
             "parser": parse_maccmd_PingSlotChannelAns
         },
         MSGDIR_DOWN: {
             "name": "PingSlotChannelReq",
-            "octet": 1,
+            "size": 1,
             "parser": parse_maccmd_PingSlotChannelReq
         }
     },
     "12": {
         MSGDIR_UP: {
             "name": "BeaconTimingReq",
-            "octet": 3,
+            "size": 3,
             "parser": parse_maccmd_BeaconTimingReq
         },
         MSGDIR_DOWN: {
             "name": "BeaconTimingAns",
-            "octet": 0,
+            "size": 0,
             "parser": parse_maccmd_BeaconTimingAns
         }
     },
     "13": {
         MSGDIR_UP: {
             "name": "BeaconFreqAns",
-            "octet": 1,
+            "size": 1,
             "parser": parse_maccmd_BeaconFreqAns
         },
         MSGDIR_DOWN: {
             "name": "BeaconFreqReq",
-            "octet": 3,
+            "size": 3,
             "parser": parse_maccmd_BeaconFreqReq
         }
     },
@@ -662,12 +662,12 @@ mac_cmd_tab = {
     "20": {
         MSGDIR_UP: {
             "name": "DeviceModeInd",
-            "octet": 1,
+            "size": 1,
             "parser": parse_maccmd_DeviceModeInd
         },
         MSGDIR_DOWN: {
             "name": "DeviceModeConf",
-            "octet": 1,
+            "size": 1,
             "parser": parse_maccmd_DeviceModeConf
         }
     }
@@ -683,15 +683,15 @@ def parse_mac_cmd(msg_dir, hex_data):
             t = mac_cmd_tab[cid][msg_dir]
             offset += 1
             n_maccmd += 1
-            if t["octet"] == 0:
+            if t["size"] == 0:
                 print("  %02d. %s (x%s %slink)" % (n_maccmd, t["name"],
                                                    cid, msg_dir))
             else:
                 print("  %02d. %s (x%s %slink) [%s]" % (
                         n_maccmd, t["name"], cid, msg_dir,
-                        ''.join(hex_data[offset:offset+t["octet"]])))
+                        ''.join(hex_data[offset:offset+t["size"]])))
             t["parser"](hex_data[offset:])
-            offset += t["octet"]
+            offset += t["size"]
         else:
             print("ERROR: Proprietary MAC command [%s] has been found." %
                   hex_data[offset])
