@@ -10,6 +10,12 @@ MSGDIR_DOWN = "down"
 MSGDIR_UP = "up"
 
 '''
+a hex string in 1 byte into a binary string in 8 bits.
+'''
+def hex2bin(x_string):
+    return bin(int(x_string, 16))[2:].zfill(8)
+
+'''
 MAC Command Parsers
 '''
 def print_detail(text):
@@ -83,53 +89,58 @@ received the last LinkCheckReq command.
 def parse_maccmd_LinkADRReq(hex_data):
     offset = 0
     #
-    txp = bin(int(hex_data[offset], 16))[2:].zfill(8)
-    print("    DataRate_TXPower:", hex_data[offset])
-    print("      DataRate: ", txp[0:3])
-    print("      TXPower: ", txp[4:])
+    x_DataRate_TXPower = hex_data[offset]
+    b_DataRate_TXPower = hex2bin(x_DataRate_TXPower)
+    print("    DataRate_TXPower: [b%s] [x%s]" % (b_DataRate_TXPower,
+                                                 x_DataRate_TXPower))
+    b_datarate = b_DataRate_TXPower[0:3]
+    b_txpower = b_DataRate_TXPower[4:]
+    print("      DataRate: %d [b%s]" % (int(b_datarate,2), b_datarate))
+    print("      TXPower : %d [b%s]" % (int(b_txpower,2), b_txpower))
     print_detail("""
-(region specific)
+REGION SPECIFIC.
+A value 0xF (15 in decimal format) of either DataRate or TXPower
+means that the device MUST
+ignore that field, and keep the current parameter value.
 """)
     offset += 1
     #
-    ChMask1 = bin(int(hex_data[offset], 16))[2:].zfill(8)
-    ChMask2 = bin(int(hex_data[offset+1], 16))[2:].zfill(8)
-    print("    ChMask:", ChMask1, ChMask2)
-    print("      0...7 :", ChMask1)
-    print("      8...15:", ChMask2)
+    x_ChMask = "%s%s" % (hex_data[offset], hex_data[offset+1])
+    b_ChMask = "%s%s" % (hex2bin(x_ChMask[:2]), hex2bin(x_ChMask[2:]))
+    print("    ChMask: [b%s] [b%s] [x%s]" % (b_ChMask[:8], b_ChMask[8:]))
+    for i in range(16):
+        print("      CH %d : %s" % (i, b_ChMask[i]))
     print_detail("""
-set to 1 means that the corresponding channel can be used for
-uplink transmissions if this channel allows the data
-rate currently used by the end-device. A
-bit set to 0 means the corresponding channels should be
-avoided.
+The channel mask (ChMask) encodes the channels usable for uplink access.
+A bit in the ChMask field set to 1 means that the corresponding channel
+can be used for uplink transmissions if this channel allows the data rate
+currently used by the end-device.
+A bit set to 0 means the corresponding channels should be avoided.
 """)
     offset += 2
     #
-    print("    Redundancy:", hex_data[offset])
-    Redundancy = bin(int(hex_data[offset], 16))[2:].zfill(8)
-    print("      RFU:", Redundancy[0])
-    print("      ChMaskCntl:", Redundancy[1:4])
+    x_Redundancy = hex_data[offset]
+    b_Redundancy = hex2bin(x_Redundancy)
+    print("    Redundancy: [b%s] [x%s]" % (b_Redundancy, x_Redundancy))
+    print("      RFU: [b%s]" % Redundancy[0])
+    print("      ChMaskCntl: [b%s]" % Redundancy[1:4])
     print_detail("""
-(region specific)
+REGION SPECIFIC.
+The channel mask control (ChMaskCntl) field controls the
+interpretation of the previously
+defined ChMask bit mask.
 """)
-    print("      NbTrans:", Redundancy[4:])
+    b_NbTrans = Redundancy[4:]
+    print("      NbTrans: %d [b%s]" % (int(b_NbTrans,2), b_NbTrans))
     print_detail("""
-the number of transmissions for each uplink message.
-This applies only to unconfirmed uplink frames.
-The default value is 1 corresponding to a single transmission
-of each frame.  The valid range is [1:15].
-If NbTrans==0 is received the end-device should use the
-default value. This field can be used
-by the network manager to control the redundancy of the
-node uplinks to obtain a given Quality of Service.
+The NbTrans field is the number of transmissions for each uplink message.
 """)
 
 def parse_maccmd_LinkADRAns(hex_data):
     offset = 0
     #
     Status = bin(int(hex_data[offset], 16))[2:].zfill(8)
-    print("    Status:", hex_data[offset], Status)
+    print("    Status: [b%s]" % Status)
     print("      RFU:", Status[0:5])
     print("      Power ACK:", Status[5])
     if Status[5] == "0":
