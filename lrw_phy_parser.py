@@ -149,7 +149,7 @@ def parse_maccmd_LinkADRAns(hex_data):
     b_Power_ACK = b_Status[5]
     b_Data_rate_ACK = b_Status[6]
     b_Channel_mask_ACK = b_Status[7]
-    print("    Status            : [b%s] [x%s]" % b_Status, x_Status)
+    print("    Status            : [b%s] [x%s]" % (b_Status, x_Status))
     print("      RFU             : [b%s]" % b_Status[0:5])
     print("      Power ACK       : %s" % b_Power_ACK)
     if b_Power_ACK == "0":
@@ -506,10 +506,40 @@ def parse_maccmd_PingSlotChannelAns(hex_data):
     print("    NOT YET IMPLEMENTED.")
 
 def parse_maccmd_BeaconTimingReq(hex_data):
-    print("    DEPRECATED.")
+    print_detail("""
+DEPRECATED.
+The network may answer only a limited number of requests per a given time
+period.  An end-device must not expect that BeaconTimingReq is answered
+immediately with a BeaconTimingAns. Class A end-devices wanting to switch
+to Class B should not transmit more than one BeaconTimingReq per hour.
+""")
 
 def parse_maccmd_BeaconTimingAns(hex_data):
-    print("    DEPRECATED.")
+    print_detail("""
+DEPRECATED.
+""")
+    offset = 0
+    #
+    x_Delay = ''.join(hex_data[offset:offset+2])
+    i_Delay = int(x_Delay, 16)
+    print("    Delay  : %d [x%s]" % (i_Delay, x_Delay))
+    print_detail("""
+If the remaining time between the end of the
+current downlink frame and the start of the next beacon frame is noted RTime
+then: 30 ms x (Delay+1) > RTime >= 30 ms x Delay
+""")
+    offset += 2
+    #
+    x_Channel = hex_data[offset] 
+    i_Channel = int(x_Channel, 16)
+    print("    Channel: %d [x%s]" % (i_Channel, x_Channel))
+    print_detail("""
+In networks where the beacon uses alternatively several channels,
+the "Channel" field is the index of the beaconing channel
+on which the next beacon will be broadcasted.
+For networks where the beacon broadcast frequency is fixed then this field
+content is 0.
+""")
 
 def parse_maccmd_BeaconFreqReq(hex_data):
     Freq = int(hex_data[offset], 16)
@@ -709,12 +739,12 @@ mac_cmd_tab = {
     "12": {
         MSGDIR_UP: {
             "name": "BeaconTimingReq",
-            "size": 3,
+            "size": 0,
             "parser": parse_maccmd_BeaconTimingReq
         },
         MSGDIR_DOWN: {
             "name": "BeaconTimingAns",
-            "size": 0,
+            "size": 3,
             "parser": parse_maccmd_BeaconTimingAns
         }
     },
