@@ -4,6 +4,7 @@
 from __future__ import print_function
 
 import sys
+import re
 
 MIC_LEN = 4
 MSGDIR_DOWN = "down"
@@ -22,7 +23,7 @@ def print_detail(text):
     indent = "        "
     sys.stdout.write(indent)
     sys.stdout.write("** Detail: ")
-    sys.stdout.write(text.strip())
+    sys.stdout.write(re.sub("\s+", " ", text))
     sys.stdout.write("\n")
 
 def parse_maccmd_ServDev_LoRaWAN_version(x_Dev_LoRaWAN_version):
@@ -108,12 +109,12 @@ ignore that field, and keep the current parameter value.
 """)
     offset += 1
     #
-    x_ChMask = "%s%s" % (hex_data[offset], hex_data[offset+1])
+    x_ChMask = ''.join(hex_data[offset:offset+2])
     b_ChMask = "%s%s" % (hex2bin(x_ChMask[:2]), hex2bin(x_ChMask[2:]))
-    print("    ChMask          : [b%s] [b%s] [x%s]" % (b_ChMask[:8],
-                                                       b_ChMask[8:]))
+    print("    ChMask          : [b%s] [b%s]" % (b_ChMask[:8], b_ChMask[8:]))
     for i in range(16):
-        print("      CH %d     : %s" % (i, b_ChMask[i]))
+        if b_ChMask[i] == "1":
+            print("      CH %02d         : %s" % (i, b_ChMask[i]))
     print_detail("""
 The channel mask (ChMask) encodes the channels usable for uplink access.
 A bit in the ChMask field set to 1 means that the corresponding channel
@@ -126,15 +127,15 @@ A bit set to 0 means the corresponding channels should be avoided.
     x_Redundancy = hex_data[offset]
     b_Redundancy = hex2bin(x_Redundancy)
     print("    Redundancy      : [b%s] [x%s]" % (b_Redundancy, x_Redundancy))
-    print("      RFU           : [b%s]" % Redundancy[0])
-    print("      ChMaskCntl    : [b%s]" % Redundancy[1:4])
+    print("      RFU           : [b%s]" % b_Redundancy[0])
+    print("      ChMaskCntl    : [b%s]" % b_Redundancy[1:4])
     print_detail("""
 REGION SPECIFIC.
 The channel mask control (ChMaskCntl) field controls the
 interpretation of the previously
 defined ChMask bit mask.
 """)
-    b_NbTrans = Redundancy[4:]
+    b_NbTrans = b_Redundancy[4:]
     print("      NbTrans: %d [b%s]" % (int(b_NbTrans,2), b_NbTrans))
     print_detail("""
 The NbTrans field is the number of transmissions for each uplink message.
@@ -340,7 +341,7 @@ device may have to store more than 16 channel definitions.
 """)
     offset += 1
     #
-    x_Freq = hex_data[offset:offset+2]
+    x_Freq = ''.join(hex_data[offset:offset+2])
     i_Freq = int(x_Freq, 16)
     print("    Freq   : %d kHz [x%s]" % (i_ChIndex, x_ChIndex))
     print_detail("""
