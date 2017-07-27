@@ -474,14 +474,18 @@ The device is able to use this frequency.
 def parse_maccmd_PingSlotInfoReq(hex_data):
     offset = 0
     #
-    period = bin(int(hex_data[offset], 16))[2:].zfill(8)
-    print("    PingSlotParam:", hex_data[offset])
-    print("      RFU:", period[0:4])
-    print("      Periodicity:", period[5:7])
+    x_PingSlotParam = hex_data[offset]
+    b_PingSlotParam = hex2bin(x_PingSlotParam)
+    i_Periodicity = int(b_PingSlotParam[5:7], 2)
+    print("    PingSlotParam: [b%s] [x%s]" % (b_PingSlotParam,
+                                              x_PingSlotParam))
+    print("      RFU        : [b%s]" % b_PingSlotParam[0:4])
+    print("      Periodicity: %d [b%s]" % (i_Periodicity,
+                                           b_PingSlotParam[5:7]))
     print_detail("""
 Periodicity = 0 means that the end-device opens a ping slot every second.
-Periodicity = 7, every 128 seconds which is the
-maximum ping period supported by the LoRaWAN Class B specification.
+Periodicity = 7, every 128 seconds which is the maximum ping period
+supported by the LoRaWAN Class B specification.
 """)
 
 def parse_maccmd_PingSlotInfoAns(hex_data):
