@@ -208,38 +208,40 @@ def parse_maccmd_DutyCycleAns(hex_data):
 def parse_maccmd_RXParamSetupReq(hex_data):
     offset = 0
     #
-    DLsettings = bin(int(hex_data[offset], 16))[2:].zfill(8)
-    print("    DLsettings:", hex_data[offset])
-    print("      RFU:", DLsettings[0])
-    print("      RX1DRoffset:", DLsettings[1:4])
+    x_DLsettings = hex_data[offset]
+    b_DLsettings = hex2bin(x_DLsettings)
+    i_RX1DRoffset = int(b_DLsettings[1:4],2)
+    print("    DLsettings: [b%s]" % b_DLsettings)
+    print("      RFU: [b%s]" % b_DLsettings[0])
+    print("      RX1DRoffset: %d [b%s]" % (i_RX1DRoffset, b_DLsettings[1:4]))
     print_detail("""
-The RX1DRoffset field sets the offset between the
-uplink data rate and the downlink data
-rate used to communicate with the end-device on
-the first reception slot (RX1). As a default
-this offset is 0. The offset is used to take
-into account maximum power density constraints
-for base stations in some regions and to balance
-the uplink and downlink radio link margins.
+The RX1DRoffset field sets the offset between the uplink data
+rate and the downlink data
+rate used to communicate with the end-device on the first
+reception slot (RX1). As a default
+this offset is 0. The offset is used to take into account
+maximum power density constraints
+for base stations in some regions and to balance the
+uplink and downlink radio link margins.
 """)
-    print("      RX2DataRate:", DLsettings[4:])
+    i_RX2DataRate = int(b_DLsettings[4:],2)
+    print("      RX2DataRate: %d [b%s]" % (i_RX2DataRate, DLsettings[4:]))
     print_detail("""
-The data rate (RX2DataRate) field defines
-the data rate of a downlink using the second
-receive window following the same convention as
-the LinkADRReq command (0 means
-DR0/125kHz for example). 
+The RX2DataRate field defines the data rate of a downlink using the second
+receive window following the same convention as the
+LinkADRReq command (0 means DR0/125kHz for example).
 """)
     offset += 1
     #
-    print("    Frequency:", ''.join(hex_data[offset:offset+3]))
+    x_Frequency = ''.join(hex_data[offset:offset+3])
+    print("    Frequency: [x%s]" % x_Frequency) 
     print_detail("""
 The frequency (Frequency) field corresponds to the frequency of
-the channel used for the second receive window,
-whereby the frequency is coded following
-the convention defined in the NewChannelReq
-command.
+the channel used for the second receive window, whereby
+the frequency is coded following
+the convention defined in the NewChannelReq command.
 """)
+    # XXX needs to be parsed Frequency
 
 def parse_maccmd_RXParamSetupAns(hex_data):
     offset = 0
