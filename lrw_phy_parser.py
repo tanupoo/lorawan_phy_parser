@@ -5,6 +5,7 @@ from __future__ import print_function
 
 import sys
 import re
+import argparse
 
 MIC_LEN = 4
 MSGDIR_DOWN = "down"
@@ -20,6 +21,9 @@ def hex2bin(x_string):
 MAC Command Parsers
 '''
 def print_detail(text):
+    global f_verbose
+    if not f_verbose:
+        return
     indent = "        "
     sys.stdout.write(indent)
     sys.stdout.write("** Detail: ")
@@ -1057,20 +1061,35 @@ def test_regress():
         parse_phy_payload(hexstr2array(d))
     exit(1)
 
+def parse_args():
+    p = argparse.ArgumentParser(description="""
+        LoRaWAN frame parser.
+        You can use stdin to pass the hex string if the HEX_STR is '-'.""")
+    p.add_argument("hex_str", metavar="HEX_STR", type=str, nargs='*',
+        help="a series or multiple of hex string.")
+    p.add_argument("-v", action="store_true", dest="f_verbose", default=False,
+        help="enable verbose mode.")
+    p.add_argument("-d", action="append_const", dest="_f_debug", default=[],
+        const=1, help="increase debug mode.")
+    args = p.parse_args()
+    args.debug_level = len(args._f_debug)
+    return args
+
 '''
 test code
 '''
 if __name__ == '__main__' :
-    if len(sys.argv) == 1:
-        hex_data = sys.stdin.readline().strip()
-    elif sys.argv[1] in ["-h", "--help"]:
-        print("Usage: %s (hex)" % (sys.argv[0]))
-        print("    You can use stdin to pass the hex string as well.")
+    opt = parse_args()
+    global f_verbose
+    f_verbose = opt.f_verbose
+    hex_data = ''.join(opt.hex_str)
+    if hex_data == "-":
+        for i in sys.stdin:
+            parse_phy_payload(hexstr2array(i.strip()))
         exit(1)
-    elif sys.argv[1] == "test":
+    elif hex_data == "test":
         test_regress()
         exit(1)
     else:
-        hex_data = ''.join(sys.argv[1:])
-    parse_phy_payload(hexstr2array(hex_data))
+        parse_phy_payload(hexstr2array(hex_data))
 
