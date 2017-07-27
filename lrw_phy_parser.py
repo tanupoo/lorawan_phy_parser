@@ -341,10 +341,13 @@ device may have to store more than 16 channel definitions.
 """)
     offset += 1
     #
-    x_Freq = ''.join(hex_data[offset:offset+2])
+    x_Freq = ''.join(hex_data[offset:offset+3])
     i_Freq = int(x_Freq, 16)
-    print("    Freq   : %d kHz [x%s]" % (i_ChIndex, x_ChIndex))
+    print("    Freq   : %d kHz [x%s]" % (i_Freq, x_Freq))
     print_detail("""
+The frequency (Freq) field is a 24 bits unsigned integer. The actual channel
+frequency in Hz is 100 x Freq whereby values representing frequencies
+below 100 MHz are reserved for future use. 
 A Freq value of 0 disables the channel. The end-device MUST
 check that the frequency is actually allowed by its radio
 hardware and return an error
