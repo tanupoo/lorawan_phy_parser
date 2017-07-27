@@ -139,46 +139,52 @@ The NbTrans field is the number of transmissions for each uplink message.
 def parse_maccmd_LinkADRAns(hex_data):
     offset = 0
     #
-    Status = bin(int(hex_data[offset], 16))[2:].zfill(8)
-    print("    Status: [b%s]" % Status)
-    print("      RFU:", Status[0:5])
-    print("      Power ACK:", Status[5])
-    if Status[5] == "0":
+    x_Status = hex_data[offset]
+    b_Status = hex2bin(x_Status)
+    b_Power_ACK = b_Status[5]
+    b_Data_rate_ACK = b_Status[6]
+    b_Channel_mask_ACK = b_Status[7]
+    print("    Status            : [b%s] [x%s]" % b_Status, x_Status)
+    print("      RFU             : [b%s]" % b_Status[0:5])
+    print("      Power ACK       : %s" % b_Power_ACK)
+    print("      Data_rate_ACK   : %s" % b_Data_rate_ACK)
+    print("      Channel_mask_ACK: %s" % b_Channel_mask_ACK)
+    if b_Power_ACK == "0":
         print_detail("""
-The channel mask sent enables a yet undefined
-channel or the channel mask required all channels to be
-disabled. The command was discarded and the end- device
-state was not changed.
+The channel mask sent enables a yet undefined channel or the channel mask
+required all channels to be disabled. The command was
+discarded and the end- device state was not changed.
 """)
     else:
         print_detail("""
-The channel mask sent was successfully interpreted.
-All currently defined channel states were set according
-to the mask.
+The channel mask sent was successfully interpreted. All currently defined
+channel states were set according to the mask.
 """)
     print("      Data rate ACK:", Status[6])
-    if Status[6] == "0":
+    if b_Data_rate_ACK == "0":
         print_detail("""
-The data rate requested is unknown to the end-device
-or is not possible given the channel mask provided
-(not supported by any of the enabled channels). The
+The data rate requested is unknown to the end-device or is
+not possible given the channel mask provided (not supported
+by any of the enabled channels). The command was discarded
+and the end-device state was not changed.
+""")
+    else:
+        print_detail("""
+The data rate was successfully set or the DataRate field of
+the request was set to 15, meaning it was ignored
+""")
+    print("      Channel mask ACK:", Status[7])
+    if b_Channel_mask_ACK == "0":
+        print_detail("""
+The device is unable to operate at or below the requested power level.. The
 command was discarded and the end-device state was not
 changed.
 """)
     else:
         print_detail("""
-The data rate was successfully set.
-""")
-    print("      Channel mask ACK:", Status[7])
-    if Status[7] == "0":
-        print_detail("""
-The requested power level is not implemented in the device.
-The command was discarded and the end- device state was not
-changed.
-""")
-    else:
-        print_detail("""
-The power level was successfully set.
+The device is able to operate at or below the requested power level,, or the
+TXPower field of the request was set to 15, meaning it
+shall be ignored
 """)
 
 def parse_maccmd_DutyCycleReq(hex_data):
