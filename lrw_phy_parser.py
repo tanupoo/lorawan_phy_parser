@@ -95,8 +95,8 @@ def parse_maccmd_LinkADRReq(hex_data):
                                                  x_DataRate_TXPower))
     b_datarate = b_DataRate_TXPower[0:3]
     b_txpower = b_DataRate_TXPower[4:]
-    print("      DataRate: %d [b%s]" % (int(b_datarate,2), b_datarate))
-    print("      TXPower : %d [b%s]" % (int(b_txpower,2), b_txpower))
+    print("      DataRate      : %d [b%s]" % (int(b_datarate,2), b_datarate))
+    print("      TXPower       : %d [b%s]" % (int(b_txpower,2), b_txpower))
     print_detail("""
 REGION SPECIFIC.
 A value 0xF (15 in decimal format) of either DataRate or TXPower
@@ -107,9 +107,10 @@ ignore that field, and keep the current parameter value.
     #
     x_ChMask = "%s%s" % (hex_data[offset], hex_data[offset+1])
     b_ChMask = "%s%s" % (hex2bin(x_ChMask[:2]), hex2bin(x_ChMask[2:]))
-    print("    ChMask: [b%s] [b%s] [x%s]" % (b_ChMask[:8], b_ChMask[8:]))
+    print("    ChMask          : [b%s] [b%s] [x%s]" % (b_ChMask[:8],
+                                                       b_ChMask[8:]))
     for i in range(16):
-        print("      CH %d : %s" % (i, b_ChMask[i]))
+        print("      CH %d     : %s" % (i, b_ChMask[i]))
     print_detail("""
 The channel mask (ChMask) encodes the channels usable for uplink access.
 A bit in the ChMask field set to 1 means that the corresponding channel
@@ -121,9 +122,9 @@ A bit set to 0 means the corresponding channels should be avoided.
     #
     x_Redundancy = hex_data[offset]
     b_Redundancy = hex2bin(x_Redundancy)
-    print("    Redundancy: [b%s] [x%s]" % (b_Redundancy, x_Redundancy))
-    print("      RFU: [b%s]" % Redundancy[0])
-    print("      ChMaskCntl: [b%s]" % Redundancy[1:4])
+    print("    Redundancy      : [b%s] [x%s]" % (b_Redundancy, x_Redundancy))
+    print("      RFU           : [b%s]" % Redundancy[0])
+    print("      ChMaskCntl    : [b%s]" % Redundancy[1:4])
     print_detail("""
 REGION SPECIFIC.
 The channel mask control (ChMaskCntl) field controls the
@@ -147,20 +148,19 @@ def parse_maccmd_LinkADRAns(hex_data):
     print("    Status            : [b%s] [x%s]" % b_Status, x_Status)
     print("      RFU             : [b%s]" % b_Status[0:5])
     print("      Power ACK       : %s" % b_Power_ACK)
-    print("      Data_rate_ACK   : %s" % b_Data_rate_ACK)
-    print("      Channel_mask_ACK: %s" % b_Channel_mask_ACK)
     if b_Power_ACK == "0":
         print_detail("""
-The channel mask sent enables a yet undefined channel or the channel mask
-required all channels to be disabled. The command was
-discarded and the end- device state was not changed.
+The device is unable to operate at or below the requested power level.. The
+command was discarded and the end-device state was not
+changed.
 """)
     else:
         print_detail("""
-The channel mask sent was successfully interpreted. All currently defined
-channel states were set according to the mask.
+The device is able to operate at or below the requested power level,, or the
+TXPower field of the request was set to 15, meaning it
+shall be ignored
 """)
-    print("      Data rate ACK:", Status[6])
+    print("      Data_rate_ACK   : %s" % b_Data_rate_ACK)
     if b_Data_rate_ACK == "0":
         print_detail("""
 The data rate requested is unknown to the end-device or is
@@ -173,18 +173,17 @@ and the end-device state was not changed.
 The data rate was successfully set or the DataRate field of
 the request was set to 15, meaning it was ignored
 """)
-    print("      Channel mask ACK:", Status[7])
+    print("      Channel_mask_ACK: %s" % b_Channel_mask_ACK)
     if b_Channel_mask_ACK == "0":
         print_detail("""
-The device is unable to operate at or below the requested power level.. The
-command was discarded and the end-device state was not
-changed.
+The channel mask sent enables a yet undefined channel or the channel mask
+required all channels to be disabled. The command was
+discarded and the end- device state was not changed.
 """)
     else:
         print_detail("""
-The device is able to operate at or below the requested power level,, or the
-TXPower field of the request was set to 15, meaning it
-shall be ignored
+The channel mask sent was successfully interpreted. All currently defined
+channel states were set according to the mask.
 """)
 
 def parse_maccmd_DutyCycleReq(hex_data):
@@ -194,7 +193,7 @@ def parse_maccmd_DutyCycleReq(hex_data):
     b_DutyCyclePL = hex2bin(x_DutyCyclePL)
     i_MaxDCycle = int(b_DutyCycleP[4:],2)
     print("    DutyCyclePL: [b%s]" % b_DutyCyclePL)
-    print("      RFU: [b%s]" % cycle[0:4])
+    print("      RFU      : [b%s]" % cycle[0:4])
     print("      MaxDCycle: %.2f [b%s]" % (1./i_MaxDCycle, b_DutyCycleP[4:]))
     print_detail("""
 A value of 0 corresponds to "no duty cycle limitation"
@@ -211,8 +210,8 @@ def parse_maccmd_RXParamSetupReq(hex_data):
     x_DLsettings = hex_data[offset]
     b_DLsettings = hex2bin(x_DLsettings)
     i_RX1DRoffset = int(b_DLsettings[1:4],2)
-    print("    DLsettings: [b%s]" % b_DLsettings)
-    print("      RFU: [b%s]" % b_DLsettings[0])
+    print("    DLsettings   : [b%s]" % b_DLsettings)
+    print("      RFU        : [b%s]" % b_DLsettings[0])
     print("      RX1DRoffset: %d [b%s]" % (i_RX1DRoffset, b_DLsettings[1:4]))
     print_detail("""
 The RX1DRoffset field sets the offset between the uplink data
@@ -234,7 +233,7 @@ LinkADRReq command (0 means DR0/125kHz for example).
     offset += 1
     #
     x_Frequency = ''.join(hex_data[offset:offset+3])
-    print("    Frequency: [x%s]" % x_Frequency) 
+    print("    Frequency    : [x%s]" % x_Frequency) 
     print_detail("""
 The frequency (Frequency) field corresponds to the frequency of
 the channel used for the second receive window, whereby
@@ -251,8 +250,9 @@ def parse_maccmd_RXParamSetupAns(hex_data):
     b_RX1DRoffset_ACK = b_Status[5]
     b_RX2Datarate_ACK = b_Status[6]
     b_Channel_ACK = b_Status[7]
-    print("    RFU: [b%s]" % b_Status[0:5])
-    print("    RX1DRoffset ACK: %s" % b_RX1DRoffset_ACK)
+    print("    Status           : [b%s]" % b_Status)
+    print("      RFU            : [b%s]" % b_Status[0:5])
+    print("      RX1DRoffset ACK: %s" % b_RX1DRoffset_ACK)
     if b_RX1DRoffset_ACK == "0":
         print_detail("""
 the uplink/downlink data rate offset for RX1 slot is not in the allowed range.
@@ -270,7 +270,7 @@ The data rate requested is unknown to the end-device.
         print_detail("""
 RX2 slot channel was successfully set.
 """)
-    print("    Channel ACK:", Status[7])
+    print("    Channel ACK      :", Status[7])
     if b_Channel_ACK == "0":
         print_detail("""
 The frequency requested is not usable by the end-device.
