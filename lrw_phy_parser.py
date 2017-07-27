@@ -287,96 +287,102 @@ def parse_maccmd_DevStatusReq(hex_data):
 def parse_maccmd_DevStatusAns(hex_data):
     offset = 0
     #
-    Battery = int(hex_data[offset], 16)
-    print("    Battery: %d (%s)" % (Battery, hex_data[offset]))
-    if Battery == 255:
+    x_Battery = hex_data[offset]
+    i_Battery = int(x_Battery, 16)
+    print("    Battery: %d [x%s]" % (i_Battery, x_Battery))
+    if i_Battery == 255:
         print_detail("""
 The end-device was not able to measure the battery level.
 """)
-    elif Battery == 0:
+    elif i_Battery == 0:
         print_detail("""
 The end-device is connected to an external power source.
 """)
     offset += 1
-    Margin = bin(int(hex_data[offset], 16))[2:].zfill(8)
-    print("    Bargin: (%s)" % (hex_data[offset]))
-    print("      RFU:", Margin[0:2])
-    print("      Margin:", Margin[2:])
+    #
+    x_Margin = hex_data[offset]
+    b_Margin = hex2bin(x_Margin)
+    i_Margin = int(b_Margin,2)
+    print("    Bargin  : [b%s]" % b_Margin)
+    print("      RFU   : [b%s]" % b_Margin[0:2])
+    print("      Margin: %d [b%s]" % (i_Margin, b_Margin))
     print_detail("""
 The margin (Margin) is the demodulation signal-to-noise ratio in dB rounded to
-the nearest integer value for the last successfully received
+the nearest
+integer value for the last successfully received
 DevStatusReq command. It is a signed
-integer of 6 bits with a minimum value of -32
-and a maximum value of 31.
+integer of 6 bits with a minimum value of -32 and a
+maximum value of 31.
 """)
 
 def parse_maccmd_NewChannelReq(hex_data):
     offset = 0
     #
-    ChIndex = int(hex_data[offset], 16)
+    x_ChIndex = hex_data[offset]
+    i_ChIndex = int(x_ChIndex, 16)
+    print("    ChIndex: %d [x%s]" % (i_ChIndex, x_ChIndex))
     print_detail("""
-The channel index (ChIndex) is the index of the channel being
-created or modified.
-Depending on the region and frequency band used, the LoRaWAN specification imposes
-default channels which must be common to all
-devices and cannot be modified by the NewChannelReq command (cf. Chapter 6).
-If the number of default channels is N, the default channels go from 0 to N-1,
+The channel index (ChIndex) is the index of the channel being created or
+modified.
+Depending on the region and frequency band used, in
+certain regions (cf [PHY]) the LoRaWAN specification imposes default
+channels which must be common to all devices and
+cannot be modified by the NewChannelReq command.
+If the number of default channels is N,
+the default channels go from 0 to N-1,
 and the acceptable range for ChIndex is N to 15.
-A device must be able to handle at least 16
-different channel definitions. In certain region
-the device may have to store more than 16 channel definitions.
+A device must be able to handle at least 16 different
+channel definitions. In certain region the
+device may have to store more than 16 channel definitions.
 """)
     offset += 1
     #
-    Freq = int(hex_data[offset], 16)
+    x_Freq = hex_data[offset:offset+2]
+    i_Freq = int(x_Freq, 16)
+    print("    Freq   : %d kHz [x%s]" % (i_ChIndex, x_ChIndex))
     print_detail("""
-The frequency (Freq) field is a 24 bits unsigned integer. The actual channel
-frequency in Hz
-is 100 x Freq whereby values representing
-frequencies below 100 MHz are reserved for
-future use. This allows setting the frequency of
-a channel anywhere between 100 MHz to
-1.67 GHz in 100 Hz steps. A Freq value of 0
-disables the channel. The end-device has to
-check that the frequency is actually allowed by
-its radio hardware and return an error
+A Freq value of 0 disables the channel. The end-device MUST
+check that the frequency is actually allowed by its radio
+hardware and return an error
 otherwise.
 """)
     offset += 3
     #
-    DrRange = bin(int(hex_data[offset], 16))[2:].zfill(8)
-    print("    DrRange: %s" % (hex_data[offset]))
-    print("      MaxDR: ", DrRange[0:4])
-    print("      MinDR: ", DrRange[4:])
+    x_DrRange = hex_data[offset]
+    b_DrRange = hex2bin(x_DrRange)
+    i_MaxDR = int(b_DrRange[:4], 2)
+    i_MinDR = int(b_DrRange[4:], 2)
+    print("    DrRange: [x%s]" % (x_DrRange))
+    print("      MaxDR: %d [b%s]" % (i_MaxDR, b_DrRange[:4]))
+    print("      MinDR: %d [b%s]" % (i_MinDR, b_DrRange[4:]))
     print_detail("""
 the minimum data rate (MinDR) subfield
-designate the lowest uplink data rate allowed on
-this channel. For example 0 designates
-DR0 / 125 kHz. Similarly, the maximum data rate
-(MaxDR) designates the highest uplink
-data rate. For example, DrRange = 0x77 means
-that only 50 kbps GFSK is allowed on a
-channel and DrRange = 0x50 means that DR0 / 125
-kHz to DR5 / 125 kHz are supported.
+designate the lowest uplink data rate allowed on this channel.
+Similarly, the maximum data rate
+(MaxDR) designates the highest uplink data rate.
 """)
 
 def parse_maccmd_NewChannelAns(hex_data):
     offset = 0
     #
-    Status = bin(int(hex_data[offset], 16))[2:].zfill(8)
-    print("    RFU:", Status[0:6])
-    print("    Data rate range ok:", Status[6])
-    if Status[6] == "0":
+    x_Status = hex_data[offset]
+    b_Status = hex2bin(x_Status)
+    b_Data_rate_range_ok = b_Status[6]
+    b_Channel_frequency_ok = b_Status[7]
+    print("    Status                : [x%s]" % x_Status)
+    print("      RFU                 : [b%s]" % b_Status[0:6])
+    print("      Data rate range ok  : %s" % b_Data_rate_range_ok)
+    if b_Data_rate_range_ok == "0":
         print_detail("""
-The designated data rate range exceeds the ones currently defined for this end-
-device.
+The designated data rate range exceeds the ones currently defined
+for this end-device.
 """)
     else:
         print_detail("""
 The data rate range is compatible with the possibilities of the end-device.
 """)
-    print("    Channel frequency ok:", Status[7])
-    if Status[7] == "0":
+    print("      Channel frequency ok: %s" % b_Channel_frequency_ok)
+    if b_Channel_frequency_ok == "0":
         print_detail("""
 The device cannot use this frequency.
 """)
