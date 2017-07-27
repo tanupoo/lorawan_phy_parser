@@ -190,13 +190,15 @@ shall be ignored
 def parse_maccmd_DutyCycleReq(hex_data):
     offset = 0
     #
-    cycle = bin(int(hex_data[offset], 16))[2:].zfill(8)
-    print("    DutyCyclePL:", hex_data[offset])
-    print("      RFU:", cycle[0:4])
-    print("      MaxDCycle:", cycle[4])
+    x_DutyCyclePL = hex_data[offset]
+    b_DutyCyclePL = hex2bin(x_DutyCyclePL)
+    i_MaxDCycle = int(b_DutyCycleP[4:],2)
+    print("    DutyCyclePL: [b%s]" % b_DutyCyclePL)
+    print("      RFU: [b%s]" % cycle[0:4])
+    print("      MaxDCycle: %.2f [b%s]" % (1./i_MaxDCycle, b_DutyCycleP[4:]))
     print_detail("""
-A value of 0 corresponds to no duty cycle
-limitation except the one set by the regional regulation.
+A value of 0 corresponds to "no duty cycle limitation"
+except the one set by the regional regulation.
 """)
 
 def parse_maccmd_DutyCycleAns(hex_data):
