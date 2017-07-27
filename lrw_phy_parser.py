@@ -246,34 +246,38 @@ the convention defined in the NewChannelReq command.
 def parse_maccmd_RXParamSetupAns(hex_data):
     offset = 0
     #
-    Status = bin(int(hex_data[offset], 16))[2:].zfill(8)
-    print("    RFU:", Status[0:5])
-    print("    RX1DRoffset ACK:", Status[5])
-    if Status[5] == "0":
-        print_detail("""
-The frequency requested is not usable by the end-device.
-""")
-    else:
-        print_detail("""
-RX2 slot channel was successfully set.
-""")
-    print("    RX2 Data rate ACK:", Status[6])
-    if Status[6] == "0":
-        print_detail("""
-The data rate requested is unknown to the end-device.
-""")
-    else:
-        print_detail("""
-RX2 slot data rate was successfully set.
-""")
-    print("    Channel ACK:", Status[7])
-    if Status[7] == "0":
+    x_Status = hex_data[offset]
+    b_Status = hex2bin(x_Status)
+    b_RX1DRoffset_ACK = b_Status[5]
+    b_RX2Datarate_ACK = b_Status[6]
+    b_Channel_ACK = b_Status[7]
+    print("    RFU: [b%s]" % b_Status[0:5])
+    print("    RX1DRoffset ACK: %s" % b_RX1DRoffset_ACK)
+    if b_RX1DRoffset_ACK == "0":
         print_detail("""
 the uplink/downlink data rate offset for RX1 slot is not in the allowed range.
 """)
     else:
         print_detail("""
 RX1DRoffset was successfully set.
+""")
+    print("    RX2 Data rate ACK: %s" % b_RX2Datarate_ACK)
+    if b_RX2Datarate_ACK == "0":
+        print_detail("""
+The data rate requested is unknown to the end-device.
+""")
+    else:
+        print_detail("""
+RX2 slot channel was successfully set.
+""")
+    print("    Channel ACK:", Status[7])
+    if b_Channel_ACK == "0":
+        print_detail("""
+The frequency requested is not usable by the end-device.
+""")
+    else:
+        print_detail("""
+RX2 slot channel was successfully set.
 """)
 
 def parse_maccmd_DevStatusReq(hex_data):
