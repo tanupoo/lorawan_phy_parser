@@ -19,8 +19,11 @@ def hex2bin(x_string):
 MAC Command Parsers
 '''
 def print_detail(text):
-    indent = "     ** Detail :"
-    print(indent, text.strip())
+    indent = "        "
+    sys.stdout.write(indent)
+    sys.stdout.write("** Detail: ")
+    sys.stdout.write(text.strip())
+    sys.stdout.write("\n")
 
 def parse_maccmd_ServDev_LoRaWAN_version(x_Dev_LoRaWAN_version):
     b_Dev_LoRaWAN_version = hex2bin(x_Dev_LoRaWAN_version)
@@ -1005,7 +1008,7 @@ def parse_phy_payload(hex_data):
         if rest_len:
             print("## FRMPayload   :", ''.join(payload[-rest_len:]))
     #
-    print("## MIC          : x%s" % (''.join(mic))) # XXX endian ?
+    print("## MIC          : %s" % (''.join(mic))) # XXX endian ?
 
 
 def hexstr2array(hexstr):
