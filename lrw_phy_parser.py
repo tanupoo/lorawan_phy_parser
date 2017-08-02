@@ -1050,7 +1050,6 @@ def parse_phy_payload(hex_data):
 
 
 def hexstr2array(hexstr):
-    print('xxx', hexstr)
     return [ hexstr[i:i+2] for i in range(0,len(hexstr),2) ]
 
 def test_regress():
