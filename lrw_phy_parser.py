@@ -113,7 +113,7 @@ ignore that field, and keep the current parameter value.
 """)
     offset += 1
     #
-    x_ChMask = ''.join(hex_data[offset:offset+2])
+    x_ChMask = "".join(hex_data[offset:offset+2])
     b_ChMask = "%s%s" % (hex2bin(x_ChMask[:2]), hex2bin(x_ChMask[2:]))
     print("    ChMask          : [b%s] [b%s]" % (b_ChMask[:8], b_ChMask[8:]))
     for i in range(16):
@@ -240,7 +240,7 @@ LinkADRReq command (0 means DR0/125kHz for example).
 """)
     offset += 1
     #
-    x_Frequency = ''.join(hex_data[offset:offset+3])
+    x_Frequency = "".join(hex_data[offset:offset+3])
     print("    Frequency    : [x%s]" % x_Frequency) 
     print_detail("""
 The frequency (Frequency) field corresponds to the frequency of
@@ -345,7 +345,7 @@ device may have to store more than 16 channel definitions.
 """)
     offset += 1
     #
-    x_Freq = ''.join(hex_data[offset:offset+3])
+    x_Freq = "".join(hex_data[offset:offset+3])
     i_Freq = int(x_Freq, 16)
     print("    Freq   : %d kHz [x%s]" % (i_Freq, x_Freq))
     print_detail("""
@@ -524,7 +524,7 @@ DEPRECATED.
 """)
     offset = 0
     #
-    x_Delay = ''.join(hex_data[offset:offset+2])
+    x_Delay = "".join(hex_data[offset:offset+2])
     i_Delay = int(x_Delay, 16)
     print("    Delay  : %d [x%s]" % (i_Delay, x_Delay))
     print_detail("""
@@ -797,7 +797,7 @@ def parse_mac_cmd(msg_dir, hex_data):
             else:
                 print("  %02d. %s (x%s %slink) [%s]" % (
                         n_maccmd, t["name"], cid, msg_dir,
-                        ''.join(hex_data[offset:offset+t["size"]])))
+                        "".join(hex_data[offset:offset+t["size"]])))
             t["parser"](hex_data[offset:])
             offset += t["size"]
         else:
@@ -864,11 +864,11 @@ MACPayload parser
     ADR | ACKReq | ACK | Class B  | FOptsLen
 '''
 def parse_mac_payload(msg_dir, hex_data):
-    devaddr = ''.join(hex_data[0:4][::-1])
+    devaddr = "".join(hex_data[0:4][::-1])
     fctrl = hex_data[4]
     fctrl_bin = bin(int(fctrl, 16))[2:].zfill(8)
-    print("  FHDR            [x%s]" % (''.join(hex_data)))
-    print("    DevAddr     : %s [x%s]" % (devaddr, ''.join(hex_data[:4])))
+    print("  FHDR            [x%s]" % ("".join(hex_data)))
+    print("    DevAddr     : %s [x%s]" % (devaddr, "".join(hex_data[:4])))
     print("    FCtrl       : [x%s] [b%s]" % (fctrl, fctrl_bin))
     #
     adr = int(fctrl_bin[0:1])
@@ -889,9 +889,9 @@ def parse_mac_payload(msg_dir, hex_data):
         print("      RFU/ClsB  : %d" % fctrl_rfu_classb)
     #
     foptslen = int(fctrl_bin[4:], 2)
-    fcnt = int(''.join(hex_data[5:7][::-1]), 16)
+    fcnt = int("".join(hex_data[5:7][::-1]), 16)
     print("      FOptsLen  : %d [b%s]" % (foptslen, fctrl_bin[4:]))
-    print("    FCnt        : %d [x%s]" % (fcnt, ''.join(hex_data[5:7])))
+    print("    FCnt        : %d [x%s]" % (fcnt, "".join(hex_data[5:7])))
 
     '''
 ## FOptsLen, FOpts, FPort, FRMPayload
@@ -944,7 +944,7 @@ encrypted and must not exceed the maximum FRMPayload length.
     if foptslen:
         offset += foptslen
         fopts = hex_data[fopts_offset:offset]
-        print("    FOpts         [x%s]" % (''.join(fopts)))
+        print("    FOpts         [x%s]" % ("".join(fopts)))
         print("## MAC Command (No. CMD (CID DIR) [MSG])")
         parse_mac_cmd(msg_dir, fopts)
     rest_len = len(hex_data[offset:])
@@ -986,10 +986,12 @@ def parse_joinreq(hex_data):
     appeui = hex_data[0:8][::-1]
     deveui = hex_data[8:16][::-1]
     devnonce = hex_data[16:18]  # XXX little endian ?
-    print("  AppEUI        (x%s): %s" % (''.join(appeui[::-1]), ''.join(appeui)))
-    print("  DevEUI        (x%s): %s" % (''.join(deveui[::-1]), ''.join(deveui)))
-    print("  DevNonce      (x%s): %s" % (''.join(devnonce),
-                                         ''.join(devnonce[::-1])))
+    print("  AppEUI        (x%s): %s" % ("".join(appeui[::-1]),
+                                         "".join(appeui)))
+    print("  DevEUI        (x%s): %s" % ("".join(deveui[::-1]),
+                                         "".join(deveui)))
+    print("  DevNonce      (x%s): %s" % ("".join(devnonce),
+                                         "".join(devnonce[::-1])))
 
 '''
 JoinRes parser
@@ -1005,9 +1007,9 @@ def parse_joinres(hex_data):
     devaddr = hex_data[6:10]
     DLSettings = hex_data[10]
     RxDelay = hex_data[11]
-    print("  AppNonce      : x%s" % (''.join(appnonce)))
-    print("  NetID         : x%s" % (''.join(netid)))
-    print("  DevAddr       : x%s" % (''.join(devaddr)))
+    print("  AppNonce      : x%s" % ("".join(appnonce)))
+    print("  NetID         : x%s" % ("".join(netid)))
+    print("  DevAddr       : x%s" % ("".join(devaddr)))
     print("  DLSettings    : x%s" % (DLSettings))
     print("  RxDelay       : x%s" % (RxDelay))
     print("WARNING: not all implemented yet.")
@@ -1022,7 +1024,7 @@ PHYPayload parser
 '''
 def parse_phy_payload(hex_data):
     print("=== PHYPayload ===")
-    print("[x %s]" % ' '.join(hex_data))
+    print("[x %s]" % " ".join(hex_data))
     # payload: i.e. MACPayload, Join Req, JoinRes
     payload_len = len(hex_data) - MIC_LEN
     payload = hex_data[1:payload_len]
@@ -1044,9 +1046,9 @@ def parse_phy_payload(hex_data):
         print("## MACPayload")
         rest_len = parse_mac_payload(msg_dir, payload)
         if rest_len:
-            print("## FRMPayload   :", ''.join(payload[-rest_len:]))
+            print("## FRMPayload   :", "".join(payload[-rest_len:]))
     #
-    print("## MIC          : %s" % (''.join(mic))) # XXX endian ?
+    print("## MIC          : %s" % ("".join(mic))) # XXX endian ?
 
 
 def hexstr2array(hexstr):
@@ -1067,6 +1069,8 @@ def parse_args():
         You can use stdin to pass the hex string if the HEX_STR is '-'.""")
     p.add_argument("hex_str", metavar="HEX_STR", type=str, nargs='*',
         help="a series or multiple of hex string.")
+    p.add_argument("-b", action="store", dest="beacon_rfu", default=2,
+        help="specify the number of bytes of the RFU in the beacon.")
     p.add_argument("-v", action="store_true", dest="f_verbose", default=False,
         help="enable verbose mode.")
     p.add_argument("-d", action="append_const", dest="_f_debug", default=[],
@@ -1078,14 +1082,14 @@ def parse_args():
 '''
 test code
 '''
-if __name__ == '__main__' :
+if __name__ == "__main__" :
     opt = parse_args()
     global f_verbose
     f_verbose = opt.f_verbose
-    hex_data = ''.join(opt.hex_str)
+    hex_data = "".join(opt.hex_str)
     if hex_data == "-":
         for i in sys.stdin:
-            parse_phy_payload(hexstr2array(re.sub(r'[\s\n]', '', i)))
+            parse_phy_payload(hexstr2array(re.sub(r"[\s\n]", "", i)))
         exit(1)
     elif hex_data == "test":
         test_regress()
