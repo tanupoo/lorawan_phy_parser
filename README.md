@@ -1,6 +1,8 @@
 LoRaWAN PHY Payload Parser
 ==========================
 
+This is a parser tool of the LoRaWAN PHY payload, supporting v1.1.
+
 ## Requirement
 
 Python 2.7 is required.
