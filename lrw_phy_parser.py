@@ -278,7 +278,7 @@ The data rate requested is unknown to the end-device.
         print_detail("""
 RX2 slot channel was successfully set.
 """)
-    print("    Channel ACK      :", Status[7])
+    print("    Channel ACK      : %s" % b_Channel_ACK)
     if b_Channel_ACK == "0":
         print_detail("""
 The frequency requested is not usable by the end-device.
@@ -1050,6 +1050,7 @@ def parse_phy_payload(hex_data):
 
 
 def hexstr2array(hexstr):
+    print('xxx', hexstr)
     return [ hexstr[i:i+2] for i in range(0,len(hexstr),2) ]
 
 def test_regress():
@@ -1085,7 +1086,7 @@ if __name__ == '__main__' :
     hex_data = ''.join(opt.hex_str)
     if hex_data == "-":
         for i in sys.stdin:
-            parse_phy_payload(hexstr2array(i.strip()))
+            parse_phy_payload(hexstr2array(re.sub(r'[\s\n]', '', i)))
         exit(1)
     elif hex_data == "test":
         test_regress()
