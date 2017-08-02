@@ -7,14 +7,39 @@ This is a parser tool of the LoRaWAN PHY payload, supporting v1.1.
 
 Python 2.7 is required.
 
-It probably doesn't work with Python 3.x.
+Not tested with Python 3.x.
+
+## Usage
+
+    % lrw_phy_parser.py -h
+    usage: lrw_phy_parser.py [-h] [-v] [-d] [HEX_STR [HEX_STR ...]]
+    
+      LoRaWAN frame parser. You can use stdin to pass the hex string
+      if the HEX_STR is '-'.
+    
+    positional arguments:
+      HEX_STR     a series or multiple of hex string.
+    
+    optional arguments:
+      -h, --help  show this help message and exit
+      -v          enable verbose mode.
+      -d          increase debug mode.
 
 ## How to use
 
 You can put the hex string of the LoRaWAN PHY Payload into the arughtment.
-Or, you can pass the string as its stdin.
+The string of '01 02 03 04', '01020304', or '0102 0304' are same.
 
-Then, it will parse the string and show the result like below.
+The separater is a new line code.
+If you make a file containing some lines of the hex string like below.
+
+    01020304
+    05060708
+    0a0b0c0d
+
+The parser can decode each of them separately.
+
+It will parse the string and show the result like below.
 
     % python lrw_phy_parser.py 402105810080c9fe02a434eaa5f9787f187538d9b054ea0ffcb67898d4
     === PHYPayload ===
