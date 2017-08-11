@@ -923,7 +923,7 @@ encrypted and must not exceed the maximum FRMPayload length.
     if foptslen is 0:
         fopts is None
     else:
-        fopts is not None
+        fopts is not None (it is MAC command)
     #
     if rest_len is 0:
         fport is None
@@ -950,22 +950,16 @@ encrypted and must not exceed the maximum FRMPayload length.
     rest_len = len(hex_data[offset:])
     if rest_len:
         fport = hex_data[offset]
-        print("## FPort        : %d [x%s]" % (int(fport, 16), fport))
+        print("    FPort       : %d [x%s]" % (int(fport, 16), fport))
         offset += 1
         rest_len -= 1
         if int(fport) == 0:
             if foptslen:
                 print("ERROR: MAC Command is in both FOpts and FRMPayload.")
                 raise("")
-            # XXX
-            # Here the spec in the section 5 said the FRMPayload must be MAC Commands.
-            # But, there seems some devices use an app message with port 0.
-            # So, currently, we don't parse it as MAC Commands.
-            #
-            #print("=== MAC Command (FRMPayload) ===")
-            #parse_mac_cmd(msg_dir, hex_data[offset:])
-            #
-            print("WARNING: might be violate to the spec.")
+            print("=== MAC Command (FRMPayload) ===")
+            print("[x %s]" % "".join(hex_data[offset:]))
+            parse_mac_cmd(msg_dir, hex_data[offset:])
             return rest_len
         elif int(fport) == "224":
             print("=== MAC Command test ===")
@@ -1044,9 +1038,13 @@ def parse_phy_payload(hex_data):
         parse_joinres(payload)
     else:
         print("## MACPayload")
-        rest_len = parse_mac_payload(msg_dir, payload)
-        if rest_len:
-            print("## FRMPayload   :", "".join(payload[-rest_len:]))
+        try:
+            rest_len = parse_mac_payload(msg_dir, payload)
+            if rest_len:
+                print("## FRMPayload   :", "".join(payload[-rest_len:]))
+        except Exception:
+            print("Abort.")
+            exit(1)
     #
     print("## MIC          : %s" % ("".join(mic))) # XXX endian ?
 
