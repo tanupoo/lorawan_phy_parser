@@ -4,15 +4,18 @@
 from __future__ import print_function
 
 import sys
+import os
 import re
 import argparse
+from LoRaMacPayloadEncrypt import LoRaMacPayloadEncrypt
+import binascii
 
 MIC_LEN = 4
 MSGDIR_DOWN = "down"
 MSGDIR_UP = "up"
 
 '''
-a hex string in 1 byte into a binary string in 8 bits.
+a hex string into a binary string in 8 bits.
 '''
 def hex2bin(x_string):
     return bin(int(x_string, 16))[2:].zfill(8)
@@ -801,9 +804,8 @@ def parse_mac_cmd(msg_dir, hex_data):
             t["parser"](hex_data[offset:])
             offset += t["size"]
         else:
-            print("ERROR: Proprietary MAC command [%s] has been found." %
+            raise ValueError("ERROR: Proprietary MAC command [%s] has been found." %
                   hex_data[offset])
-            raise("")
 
 '''
 MHDR parser
@@ -863,35 +865,37 @@ MACPayload parser
         |   ADR  |     |  RFT or  |
     ADR | ACKReq | ACK | Class B  | FOptsLen
 '''
-def parse_mac_payload(msg_dir, hex_data):
-    devaddr = "".join(hex_data[0:4][::-1])
+def parse_mac_payload(msg_dir, hex_data, nsekey, askey, xfcnt):
+    global f_verbose
+    ret = {}
+    ret["devaddr"] = "".join(hex_data[0:4][::-1])
     fctrl = hex_data[4]
     fctrl_bin = bin(int(fctrl, 16))[2:].zfill(8)
     print("  FHDR            [x%s]" % ("".join(hex_data)))
-    print("    DevAddr     : %s [x%s]" % (devaddr, "".join(hex_data[:4])))
+    print("    DevAddr     : %s [x%s]" % (ret["devaddr"], "".join(hex_data[:4])))
     print("    FCtrl       : [x%s] [b%s]" % (fctrl, fctrl_bin))
     #
-    adr = int(fctrl_bin[0:1])
-    print("      ADR       : %d" % adr)
+    ret["adr"] = int(fctrl_bin[0:1])
+    print("      ADR       : %d" % ret["adr"])
     if msg_dir == MSGDIR_DOWN:
         fctrl_rfu = fctrl_bin[1:2]
-        ack = int(fctrl_bin[2:3])
-        fpending = int(fctrl_bin[3:4])
+        ret["ack"] = int(fctrl_bin[2:3])
+        ret["fpending"] = int(fctrl_bin[3:4])
         print("      RFU       : %s" % fctrl_rfu)
-        print("      ACK       : %d" % ack)
-        print("      FPending  : %d" % fpending)
+        print("      ACK       : %d" % ret["ack"])
+        print("      FPending  : %d" % ret["fpending"])
     else:
-        adrackreq = int(fctrl_bin[1:2])
-        ack = int(fctrl_bin[2:3])
-        fctrl_rfu_classb = int(fctrl_bin[3:4])
-        print("      ADRACKReq : %d" % adrackreq)
-        print("      ACK       : %d" % ack)
-        print("      RFU/ClsB  : %d" % fctrl_rfu_classb)
+        ret["adrackreq"] = int(fctrl_bin[1:2])
+        ret["ack"] = int(fctrl_bin[2:3])
+        ret["rfu_classb"] = int(fctrl_bin[3:4])
+        print("      ADRACKReq : %d" % ret["adrackreq"])
+        print("      ACK       : %d" % ret["ack"])
+        print("      RFU/ClsB  : %d" % ret["rfu_classb"])
     #
-    foptslen = int(fctrl_bin[4:], 2)
-    fcnt = int("".join(hex_data[5:7][::-1]), 16)
-    print("      FOptsLen  : %d [b%s]" % (foptslen, fctrl_bin[4:]))
-    print("    FCnt        : %d [x%s]" % (fcnt, "".join(hex_data[5:7])))
+    ret["foptslen"] = int(fctrl_bin[4:], 2)
+    ret["fcnt"] = int("".join(hex_data[5:7][::-1]), 16)
+    print("      FOptsLen  : %d [b%s]" % (ret["foptslen"], fctrl_bin[4:]))
+    print("    FCnt        : %d [x%s]" % (ret["fcnt"], "".join(hex_data[5:7])))
 
     '''
 ## FOptsLen, FOpts, FPort, FRMPayload
@@ -940,34 +944,71 @@ encrypted and must not exceed the maximum FRMPayload length.
     fopts_offset = 7  # the index of the FOpts start.
     offset = fopts_offset
     fopts = None
-    fport = None
-    if foptslen:
-        offset += foptslen
+    ret["fport"] = None
+    if ret["foptslen"]:
+        offset += ret["foptslen"]
         fopts = hex_data[fopts_offset:offset]
         print("    FOpts         [x%s]" % ("".join(fopts)))
         print("## MAC Command (No. CMD (CID DIR) [MSG])")
         parse_mac_cmd(msg_dir, fopts)
     rest_len = len(hex_data[offset:])
     if rest_len:
-        fport = hex_data[offset]
-        print("    FPort       : %d [x%s]" % (int(fport, 16), fport))
+        ret["fport"] = int(hex_data[offset], 16)
+        print("    FPort       : %d [x%s]" %
+              (ret["fport"], hex_data[offset]))
         offset += 1
         rest_len -= 1
-        if int(fport) == 0:
-            if foptslen:
-                print("ERROR: MAC Command is in both FOpts and FRMPayload.")
-                raise("")
-            print("=== MAC Command (FRMPayload) ===")
-            print("[x %s]" % "".join(hex_data[offset:]))
-            parse_mac_cmd(msg_dir, hex_data[offset:])
-            return rest_len
-        elif int(fport) == "224":
+        #
+        # if fport == 224, just output the data and end of processing.
+        #
+        if ret["fport"] == "224":
             print("=== MAC Command test ===")
-            return 0
-        else:
-            return rest_len
+            print("  x %s " % " ".join(hex_data[offset:]))
+            return
+        #
+        # decryption of the FRMPayload is needed.
+        #
+        dir_down = 0 if msg_dir == MSGDIR_UP else 1
+        fcnt_hex = (xfcnt + hex(ret["fcnt"])[2:]).rjust(8,"0")
+        frmpl_hex = "".join(hex_data[offset:])
+        if ret["fport"] == 0:
+            if ret["foptslen"]:
+                raise ValueError("ERROR: MAC Command is in both FOpts and FRMPayload.")
+            print("=== MAC Command in FRMPayload ===")
+            print("  [x %s]" % frmpl_hex)
+            if f_verbose:
+                print("  ** Detail:")
+                print("    buf_hex = %s" % frmpl_hex)
+                print("    key_hex = %s" % nsekey)
+                print("    devaddr = %s" % ret["devaddr"])
+                print("    dir_down = %d" % dir_down)
+                print("    fcnt = %s" % fcnt_hex)
+            if not nsekey:
+                raise ValueError("ERROR: nsekey must be specified.")
+            m = LoRaMacPayloadEncrypt(frmpl_hex, nsekey,
+                                      ret["devaddr"], dir_down, fcnt_hex)
+            m = binascii.b2a_hex(m)
+            print("  Decrypted: [x %s]" % m)
+            parse_mac_cmd(msg_dir, m)
+            return
+        print("## FRMPayload   : [x%s]" % frmpl_hex)
+        if f_verbose:
+            print("  ** Detail:")
+            print("    buf_hex = %s" % frmpl_hex)
+            print("    key_hex = %s" % askey)
+            print("    devaddr = %s" % ret["devaddr"])
+            print("    dir_down = %d" % dir_down)
+            print("    fcnt = %s" % fcnt_hex)
+        if not askey:
+            raise ValueError("ERROR: askey must be specified.")
+        m = LoRaMacPayloadEncrypt(frmpl_hex, askey,
+                                    ret["devaddr"], dir_down, fcnt_hex)
+        m = binascii.b2a_hex(m)
+        print("  x %s" % " ".join(hexstr2array(m)))
+        return
     #
-    return 0
+    return
+
 
 '''
 JoinReq parser
@@ -1011,12 +1052,15 @@ def parse_joinres(hex_data):
 '''
 PHYPayload parser
 
+    phypayload: a hex string.
+
       1  |    1...M   |  4
     MHDR | MACPayload | MIC
     MHDR |   JoinReq  | MIC
     MHDR |   JoinRes  | MIC
 '''
-def parse_phy_payload(hex_data):
+def parse_phy_payload(phypayload, nsekey=None, askey=None, xfcnt=""):
+    hex_data = hexstr2array(phypayload)
     print("=== PHYPayload ===")
     print("[x %s]" % " ".join(hex_data))
     # payload: i.e. MACPayload, Join Req, JoinRes
@@ -1039,26 +1083,34 @@ def parse_phy_payload(hex_data):
     else:
         print("## MACPayload")
         try:
-            rest_len = parse_mac_payload(msg_dir, payload)
-            if rest_len:
-                print("## FRMPayload   :", "".join(payload[-rest_len:]))
-        except Exception:
+            parse_mac_payload(msg_dir, payload, nsekey, askey, xfcnt)
+        except Exception as e:
             print("Abort.")
+            print(e)
             exit(1)
     #
     print("## MIC          : %s" % ("".join(mic))) # XXX endian ?
 
 
 def hexstr2array(hexstr):
-    return [ hexstr[i:i+2] for i in range(0,len(hexstr),2) ]
+    # in case like "a4.9.0.19"
+    if "." in hexstr:
+        return [i.rjust(2,"0") for i in hexstr.split(".")]
+    # others
+    s = re.sub(r"[,\s\n]", "", hexstr)
+    return [ s[i:i+2] for i in range(0,len(s),2) ]
 
 def test_regress():
     v = [
         "402105810080160102a6bf4432169ea0784416868d9420dd244619443e",
-        "40C1D25201A5050003070703120864FE226A9E"
+        "40C1D25201A5050003070703120864FE226A9E",
+        "40C1, D252, 01A5, 0500, 0307, 0703, 1208, 64FE, 226A, 9E",
+        "40C1 D252 01A5 0500 0307 0703 1208 64FE 226A 9E",
+        "0x40 0xC1 0xD2 0x52 0x01 0xA5 0x05 0x00 0x03 0x07 0x07 0x03 0x12 0x08 0x64 0xFE 0x22 0x6A 0x9E",
+        "66.8c.cc.57.8a.a4.a4.9.0.19.14.10.0.8.0.0.a0.ad.ba.0.0.0.7.0.b.81.b0.bf.b6.d9.f1.ca.44.b4.7c.2c"
         ]
     for d in v:
-        parse_phy_payload(hexstr2array(d))
+        parse_phy_payload(d)
     exit(1)
 
 def parse_args():
@@ -1069,6 +1121,12 @@ def parse_args():
         help="a series or multiple of hex string.")
     p.add_argument("-b", action="store", dest="beacon_rfu", default=2,
         help="specify the number of bytes of the RFU in the beacon.")
+    p.add_argument("--nsekey", action="store", dest="nsekey", default="",
+        help="specify NwkSEncKey(v1.1) or NwkSKey(v1.0.2).")
+    p.add_argument("--askey", action="store", dest="askey", default="",
+        help="specify AppSKey.")
+    p.add_argument("--xfcnt", action="store", dest="xfcnt", default="0000",
+        help="specify the most significant 16-bit of the FCnt in hex.")
     p.add_argument("-v", action="store_true", dest="f_verbose", default=False,
         help="enable verbose mode.")
     p.add_argument("-d", action="append_const", dest="_f_debug", default=[],
@@ -1077,6 +1135,7 @@ def parse_args():
     args.debug_level = len(args._f_debug)
     return args
 
+
 '''
 test code
 '''
@@ -1084,14 +1143,25 @@ if __name__ == "__main__" :
     opt = parse_args()
     global f_verbose
     f_verbose = opt.f_verbose
-    hex_data = "".join(opt.hex_str)
+    hex_data = re.sub(r"[\s\n]", "", "".join(opt.hex_str))
+    #
+    nsekey_hex = re.sub(r"[\s\n]", "", opt.nsekey)
+    if not nsekey_hex:
+        nsekey_hex = os.getenv("LORAWAN_NSEKEY")
+    askey_hex = re.sub(r"[\s\n]", "", opt.askey)
+    if not askey_hex:
+        askey_hex = os.getenv("LORAWAN_ASKEY")
+    #
     if hex_data == "-":
         for i in sys.stdin:
-            parse_phy_payload(hexstr2array(re.sub(r"[\s\n]", "", i)))
+            parse_phy_payload(i, nsekey=nsekey_hex, askey=askey_hex,
+                              xfcnt=opt.xfcnt)
         exit(1)
     elif hex_data == "test":
         test_regress()
         exit(1)
     else:
-        parse_phy_payload(hexstr2array(hex_data))
+        parse_phy_payload(hex_data,
+                          nsekey=nsekey_hex, askey=askey_hex,
+                          xfcnt=opt.xfcnt)
 
