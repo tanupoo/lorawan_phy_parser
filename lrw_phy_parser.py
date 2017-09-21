@@ -804,8 +804,10 @@ def parse_mac_cmd(msg_dir, hex_data):
             t["parser"](hex_data[offset:])
             offset += t["size"]
         else:
-            raise ValueError("ERROR: Proprietary MAC command [%s] has been found." %
+            print("ERROR: Proprietary MAC command [%s] has been found." %
                   hex_data[offset])
+            # just stop to parse all.
+            return
 
 '''
 MHDR parser
