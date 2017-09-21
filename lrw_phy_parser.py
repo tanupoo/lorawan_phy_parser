@@ -235,7 +235,7 @@ for base stations in some regions and to balance the
 uplink and downlink radio link margins.
 """)
     i_RX2DataRate = int(b_DLsettings[4:],2)
-    print("      RX2DataRate: %d [b%s]" % (i_RX2DataRate, DLsettings[4:]))
+    print("      RX2DataRate: %d [b%s]" % (i_RX2DataRate, b_DLsettings[4:]))
     print_detail("""
 The RX2DataRate field defines the data rate of a downlink using the second
 receive window following the same convention as the
@@ -991,7 +991,7 @@ encrypted and must not exceed the maximum FRMPayload length.
                                       ret["devaddr"], dir_down, fcnt_hex)
             m = binascii.b2a_hex(m)
             print("  Decrypted: [x %s]" % m)
-            parse_mac_cmd(msg_dir, m)
+            parse_mac_cmd(msg_dir, hexstr2array(m))
             return
         print("## FRMPayload   : [x%s]" % frmpl_hex)
         if f_verbose:
