@@ -130,3 +130,55 @@ You can see a short description of each command.
     ## FRMPayload   : d7
     ## MIC          : bcacbcfa
 
+If the payload contains the encrypted field, you can specify NwkKey and/or AppSKey to decrypt it.  The following example specifies the AppSKey.
+
+    % lrw_phy_parser.py --askey=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAABB 40,B2,00,EF,BE,9A,03,00,03,07,05,07,07,03,07,03,10,04,02,09,AA,50,B1,F0,79,2F,31,AD,9C,63,78,5F,83,8D,95,C6,FE,81,D2,97,09,BA,3C,6E,19,B7,71,43,7C,
+    === PHYPayload ===
+    [x 40 B2 00 EF BE 9A 03 00 03 07 05 07 07 03 07 03 10 04 02 09 AA 50 B1 F0 79 2F 31 AD 9C 63 78 5F 83 8D 95 C6 FE 81 D2 97 09 BA 3C 6E 19 B7 71 43 7C]
+    ## MHDR           [x40] [b01000000]
+      MType         : Unconfirmed Data Up [b010]
+      RFU           : [b000]
+      Major         : LoRaWAN R1 [b00]
+    ## MACPayload
+      FHDR            [xB200EFBE9A0300030705070703070310040209AA50B1F0792F31AD9C63785F838D95C6FE81D29709BA3C6E19]
+        DevAddr     : BEEF00B2 [xB200EFBE]
+        FCtrl       : [x9A] [b10011010]
+          ADR       : 1
+          ADRACKReq : 0
+          ACK       : 0
+          RFU/ClsB  : 1
+          FOptsLen  : 10 [b1010]
+        FCnt        : 3 [x0300]
+        FOpts         [x03070507070307031004]
+    ## MAC Command (No. CMD (CID DIR) [MSG])
+      01. LinkADRAns (x03 uplink) [07]
+        Status            : [b00000111] [x07]
+          RFU             : [b00000]
+          Power ACK       : 1
+          Data_rate_ACK   : 1
+          Channel_mask_ACK: 1
+      02. RXParamSetupAns (x05 uplink) [07]
+        Status           : [b00000111]
+          RFU            : [b00000]
+          RX1DRoffset ACK: 1
+        RX2 Data rate ACK: 1
+        Channel ACK      : 1
+      03. NewChannelAns (x07 uplink) [03]
+        Status                : [x03]
+          RFU                 : [b000000]
+          Data rate range ok  : 1
+          Channel frequency ok: 1
+      04. NewChannelAns (x07 uplink) [03]
+        Status                : [x03]
+          RFU                 : [b000000]
+          Data rate range ok  : 1
+          Channel frequency ok: 1
+      05. PingSlotInfoReq (x10 uplink) [04]
+        PingSlotParam: [b00000100] [x04]
+          RFU        : [b0000]
+          Periodicity: 2 [b10]
+        FPort       : 2 [x02]
+    ## FRMPayload   : [x09AA50B1F0792F31AD9C63785F838D95C6FE81D29709BA3C6E19]
+      x 00 00 09 c4 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+    ## MIC          : B771437C
+
