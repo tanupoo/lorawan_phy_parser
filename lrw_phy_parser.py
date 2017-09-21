@@ -243,15 +243,15 @@ LinkADRReq command (0 means DR0/125kHz for example).
 """)
     offset += 1
     #
-    x_Frequency = "".join(hex_data[offset:offset+3])
-    print("    Frequency    : [x%s]" % x_Frequency) 
+    x_Freq = "".join(hex_data[offset:offset+3][::-1])
+    i_Freq = int(x_Freq, 16)
+    print("    Freq    : %d kHz [x%s]" % (i_Freq, x_Freq)) 
     print_detail("""
-The frequency (Frequency) field corresponds to the frequency of
+The frequency (Freq) field corresponds to the frequency of
 the channel used for the second receive window, whereby
 the frequency is coded following
 the convention defined in the NewChannelReq command.
 """)
-    # XXX needs to be parsed Frequency
 
 def parse_maccmd_RXParamSetupAns(hex_data):
     offset = 0
@@ -348,7 +348,7 @@ device may have to store more than 16 channel definitions.
 """)
     offset += 1
     #
-    x_Freq = "".join(hex_data[offset:offset+3])
+    x_Freq = "".join(hex_data[offset:offset+3][::-1])
     i_Freq = int(x_Freq, 16)
     print("    Freq   : %d kHz [x%s]" % (i_Freq, x_Freq))
     print_detail("""
@@ -445,10 +445,12 @@ modified.
 """)
     offset += 1
     #
-    Freq = int(hex_data[offset], 16)
+    x_Freq = "".join(hex_data[offset:offset+3][::-1])
+    i_Freq = int(x_Freq, 16)
+    print("    Freq   : %d kHz [x%s]" % (i_Freq, x_Freq))
     print_detail("""
-The frequency (Freq) field is a 24 bits unsigned integer. The actual downlink
-frequency in Hz
+The frequency (Freq) field is a 24 bits unsigned integer.
+The actual downlink frequency in Hz
 is 100 x Freq whereby values representing
 frequencies below 100 MHz are reserved for
 future use. The end-device has to check that the
@@ -549,7 +551,9 @@ content is 0.
 """)
 
 def parse_maccmd_BeaconFreqReq(hex_data):
-    Freq = int(hex_data[offset], 16)
+    x_Freq = "".join(hex_data[offset:offset+3][::-1])
+    i_Freq = int(x_Freq, 16)
+    print("    Freq   : %d kHz [x%s]" % (i_Freq, x_Freq))
     print_detail("""
 Frequency is a 24bits unsigned integer. The actual beacon
 channel frequency in Hz is 100 x frequ. This allows defining
