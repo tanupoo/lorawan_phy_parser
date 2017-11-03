@@ -11,12 +11,12 @@ Not tested with Python 3.x.
 
 ## Usage
 
-    usage: lrw_phy_parser.py [-h] [-b BEACON_RFU] [--nsekey NSEKEY]
-                             [--askey ASKEY] [--xfcnt XFCNT] [-v] [-d]
-                             [HEX_STR [HEX_STR ...]]
+    lorawan_phy_parser.py [-h] [-b BEACON_RFU] [--nsekey NSEKEY]
+                          [--askey ASKEY] [--xfcnt XFCNT] [-i] [-v] [-d]
+                          [HEX_STR [HEX_STR ...]]
     
-    LoRaWAN frame parser. You can use stdin to pass the hex string
-    if the HEX_STR is '-'.
+    LoRaWAN frame parser. You can use stdin to pass the hex string if
+    the HEX_STR is '-'.
     
     positional arguments:
       HEX_STR          a series or multiple of hex string.
@@ -27,10 +27,11 @@ Not tested with Python 3.x.
       --nsekey NSEKEY  specify NwkSEncKey(v1.1) or NwkSKey(v1.0.2).
       --askey ASKEY    specify AppSKey.
       --xfcnt XFCNT    specify the most significant 16-bit of the FCnt in hex.
+      -i               ignore error. keep processing if any error happen
       -v               enable verbose mode.
       -d               increase debug mode.
 
-## How to use
+## How to pass the hex string of the data
 
 You can put the hex string of the LoRaWAN PHY Payload into the arguments.
 The following string are decoded as a same string.  i.e. '01 02 03 04'
@@ -39,6 +40,7 @@ The following string are decoded as a same string.  i.e. '01 02 03 04'
     0102 0304
     01.02.03.04
     0x01 0x02 0x03 0x04
+    0x01,0x02,0x03,0x04
     0102,0304
 
 The separater is a new line code.
@@ -49,6 +51,12 @@ If you make a file containing some lines of the hex string like below.
     0a0b0c0d
 
 The parser can decode each of them separately.
+Don't forget to specify "-" as the argument to pass the content of
+the file from the stdin, and the -i option if needed.  e.g.
+
+    cat file | lrw_phy_parser.py - -i
+
+## How to use
 
 It will parse the string and show the result like below.
 
