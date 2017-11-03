@@ -15,6 +15,15 @@ MSGDIR_DOWN = "down"
 MSGDIR_UP = "up"
 
 '''
+error case
+'''
+def error(s):
+    if f_ignore_error:
+        print("WARNING:", s)
+        return
+    raise ValueError("ERROR: %s" % s)
+
+'''
 a hex string into a binary string in 8 bits.
 '''
 def hex2bin(x_string):
@@ -979,7 +988,7 @@ encrypted and must not exceed the maximum FRMPayload length.
         frmpl_hex = "".join(hex_data[offset:])
         if ret["fport"] == 0:
             if ret["foptslen"]:
-                raise ValueError("ERROR: MAC Command is in both FOpts and FRMPayload.")
+                return error("MAC Command is in both FOpts and FRMPayload.")
             print("=== MAC Command in FRMPayload ===")
             print("  [x %s]" % frmpl_hex)
             if f_verbose:
@@ -990,12 +999,12 @@ encrypted and must not exceed the maximum FRMPayload length.
                 print("    dir_down = %d" % dir_down)
                 print("    fcnt = %s" % fcnt_hex)
             if not nsekey:
-                raise ValueError("ERROR: nsekey must be specified.")
+                return error("nsekey must be specified.")
             m = LoRaMacPayloadEncrypt(frmpl_hex, nsekey,
                                       ret["devaddr"], dir_down, fcnt_hex)
             m = binascii.b2a_hex(m)
             print("  Decrypted: [x %s]" % m)
-            parse_mac_cmd(msg_dir, hexstr2array(m))
+            parse_mac_cmd(msg_dir, str2hexstr(m))
             return
         print("## FRMPayload   : [x%s]" % frmpl_hex)
         if f_verbose:
@@ -1006,7 +1015,7 @@ encrypted and must not exceed the maximum FRMPayload length.
             print("    dir_down = %d" % dir_down)
             print("    fcnt = %s" % fcnt_hex)
         if not askey:
-            raise ValueError("ERROR: askey must be specified.")
+            return error("askey must be specified.")
         m = LoRaMacPayloadEncrypt(frmpl_hex, askey,
                                     ret["devaddr"], dir_down, fcnt_hex)
         m = binascii.b2a_hex(m)
@@ -1133,12 +1142,16 @@ def parse_args():
         help="specify AppSKey.")
     p.add_argument("--xfcnt", action="store", dest="xfcnt", default="0000",
         help="specify the most significant 16-bit of the FCnt in hex.")
+    p.add_argument("-i", action="store_true", dest="f_ignore_error",
+        help="ignore error. keep processing if any error happen")
     p.add_argument("-v", action="store_true", dest="f_verbose", default=False,
         help="enable verbose mode.")
     p.add_argument("-d", action="append_const", dest="_f_debug", default=[],
         const=1, help="increase debug mode.")
     args = p.parse_args()
+    #
     args.debug_level = len(args._f_debug)
+    global f_ignore_error
     return args
 
 
@@ -1149,6 +1162,7 @@ if __name__ == "__main__" :
     opt = parse_args()
     global f_verbose
     f_verbose = opt.f_verbose
+    f_ignore_error = opt.f_ignore_error
     hex_data = re.sub(r"[\s\n]", "", "".join(opt.hex_str))
     #
     nsekey_hex = re.sub(r"[\s\n]", "", opt.nsekey)
