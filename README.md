@@ -54,13 +54,13 @@ The parser can decode each of them separately.
 Don't forget to specify "-" as the argument to pass the content of
 the file from the stdin, and the -i option if needed.  e.g.
 
-    cat file | lrw_phy_parser.py - -i
+    cat file | lorawan_phy_parser.py - -i
 
 ## How to use
 
 It will parse the string and show the result like below.
 
-    % python lrw_phy_parser.py 402105810080c9fe02a434eaa5f9787f187538d9b054ea0ffcb67898d4
+    % lorawan_phy_parser.py 402105810080c9fe02a434eaa5f9787f187538d9b054ea0ffcb67898d4
     === PHYPayload ===
     [x 40 21 05 81 00 80 c9 fe 02 a4 34 ea a5 f9 78 7f 18 75 38 d9 b0 54 ea 0f fc b6 78 98 d4]
     ## MHDR           [x40] [b01000000]
@@ -85,7 +85,7 @@ If the payload include FOpts (MAC Commands) and if you use the -v option,
 the output will be like below.
 You can see a short description of each command.
 
-    % python lrw_phy_parser.py 809a4ed301080200050707030703070308d7bcacbcfa
+    % lorawan_phy_parser.py 809a4ed301080200050707030703070308d7bcacbcfa
     === PHYPayload ===
     [x 80 9a 4e d3 01 08 02 00 05 07 07 03 07 03 07 03 08 d7 bc ac bc fa]
     ## MHDR           [x80] [b10000000]
@@ -140,7 +140,7 @@ You can see a short description of each command.
 
 If the payload contains the encrypted field, you can specify NwkKey and/or AppSKey to decrypt it.  The following example specifies the AppSKey.
 
-    % lrw_phy_parser.py --askey=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAABB 40,B2,00,EF,BE,9A,03,00,03,07,05,07,07,03,07,03,10,04,02,09,AA,50,B1,F0,79,2F,31,AD,9C,63,78,5F,83,8D,95,C6,FE,81,D2,97,09,BA,3C,6E,19,B7,71,43,7C,
+    % lorawan_phy_parser.py --askey=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAABB 40,B2,00,EF,BE,9A,03,00,03,07,05,07,07,03,07,03,10,04,02,09,AA,50,B1,F0,79,2F,31,AD,9C,63,78,5F,83,8D,95,C6,FE,81,D2,97,09,BA,3C,6E,19,B7,71,43,7C,
     === PHYPayload ===
     [x 40 B2 00 EF BE 9A 03 00 03 07 05 07 07 03 07 03 10 04 02 09 AA 50 B1 F0 79 2F 31 AD 9C 63 78 5F 83 8D 95 C6 FE 81 D2 97 09 BA 3C 6E 19 B7 71 43 7C]
     ## MHDR           [x40] [b01000000]
