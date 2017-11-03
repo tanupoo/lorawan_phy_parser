@@ -1019,7 +1019,7 @@ encrypted and must not exceed the maximum FRMPayload length.
         m = LoRaMacPayloadEncrypt(frmpl_hex, askey,
                                     ret["devaddr"], dir_down, fcnt_hex)
         m = binascii.b2a_hex(m)
-        print("  x %s" % " ".join(hexstr2array(m)))
+        print("  x %s" % " ".join(str2hexstr(m)))
         return
     #
     return
@@ -1074,8 +1074,8 @@ PHYPayload parser
     MHDR |   JoinReq  | MIC
     MHDR |   JoinRes  | MIC
 '''
-def parse_phy_payload(phypayload, nsekey=None, askey=None, xfcnt=""):
-    hex_data = hexstr2array(phypayload)
+def parse_phy_payload(hexstr, nsekey=None, askey=None, xfcnt=""):
+    hex_data = hexstr2array(hexstr)
     print("=== PHYPayload ===")
     print("[x %s]" % " ".join(hex_data))
     # payload: i.e. MACPayload, Join Req, JoinRes
@@ -1106,14 +1106,15 @@ def parse_phy_payload(phypayload, nsekey=None, askey=None, xfcnt=""):
     #
     print("## MIC          : %s" % ("".join(mic))) # XXX endian ?
 
+def str2hexstr(buf):
+    # in case like "a4.9.0.19"
+    if "." in buf:
+        return "".join([i.rjust(2,"0") for i in buf.split(".")])
+    # others
+    return re.sub(r"([,\s\n]|0x)", "", buf)
 
 def hexstr2array(hexstr):
-    # in case like "a4.9.0.19"
-    if "." in hexstr:
-        return [i.rjust(2,"0") for i in hexstr.split(".")]
-    # others
-    s = re.sub(r"[,\s\n]", "", hexstr)
-    return [ s[i:i+2] for i in range(0,len(s),2) ]
+    return [ hexstr[i:i+2] for i in range(0,len(hexstr),2) ]
 
 def test_regress():
     v = [
@@ -1122,10 +1123,11 @@ def test_regress():
         "40C1, D252, 01A5, 0500, 0307, 0703, 1208, 64FE, 226A, 9E",
         "40C1 D252 01A5 0500 0307 0703 1208 64FE 226A 9E",
         "0x40 0xC1 0xD2 0x52 0x01 0xA5 0x05 0x00 0x03 0x07 0x07 0x03 0x12 0x08 0x64 0xFE 0x22 0x6A 0x9E",
+        "0x40,0xC1,0xD2,0x52,0x01,0xA5,0x05,0x00,0x03,0x07,0x07,0x03,0x12,0x08,0x64,0xFE,0x22,0x6A,0x9E",
         "66.8c.cc.57.8a.a4.a4.9.0.19.14.10.0.8.0.0.a0.ad.ba.0.0.0.7.0.b.81.b0.bf.b6.d9.f1.ca.44.b4.7c.2c"
         ]
     for d in v:
-        parse_phy_payload(d)
+        parse_phy_payload(str2hexstr(d))
     exit(1)
 
 def parse_args():
@@ -1149,9 +1151,7 @@ def parse_args():
     p.add_argument("-d", action="append_const", dest="_f_debug", default=[],
         const=1, help="increase debug mode.")
     args = p.parse_args()
-    #
     args.debug_level = len(args._f_debug)
-    global f_ignore_error
     return args
 
 
@@ -1161,27 +1161,35 @@ test code
 if __name__ == "__main__" :
     opt = parse_args()
     global f_verbose
+    global f_ignore_error
     f_verbose = opt.f_verbose
     f_ignore_error = opt.f_ignore_error
-    hex_data = re.sub(r"[\s\n]", "", "".join(opt.hex_str))
     #
-    nsekey_hex = re.sub(r"[\s\n]", "", opt.nsekey)
-    if not nsekey_hex:
-        nsekey_hex = os.getenv("LORAWAN_NSEKEY")
-    askey_hex = re.sub(r"[\s\n]", "", opt.askey)
-    if not askey_hex:
-        askey_hex = os.getenv("LORAWAN_ASKEY")
+    hex_str = str2hexstr("".join(opt.hex_str))
     #
-    if hex_data == "-":
-        for i in sys.stdin:
-            parse_phy_payload(i, nsekey=nsekey_hex, askey=askey_hex,
-                              xfcnt=opt.xfcnt)
-        exit(1)
-    elif hex_data == "test":
+    if hex_str == "test":
         test_regress()
         exit(1)
+    #
+    nsekey_hex = None
+    if opt.nsekey:
+        nsekey_hex = str2hexstr(opt.nsekey)
     else:
-        parse_phy_payload(hex_data,
+        nsekey_hex = os.getenv("LORAWAN_NSEKEY")
+    #
+    askey_hex = None
+    if opt.askey:
+        askey_hex = str2hexstr(opt.askey)
+    else:
+        askey_hex = os.getenv("LORAWAN_ASKEY")
+    #
+    if hex_str == "-":
+        for i in sys.stdin:
+            parse_phy_payload(str2hexstr(i), nsekey=nsekey_hex,
+                              askey=askey_hex, xfcnt=opt.xfcnt)
+        exit(1)
+    else:
+        parse_phy_payload(hex_str,
                           nsekey=nsekey_hex, askey=askey_hex,
                           xfcnt=opt.xfcnt)
 
