@@ -862,6 +862,26 @@ def parse_mhdr(hex_data):
     return mtype
 
 '''
+FRMPayload parser
+'''
+def parse_frm_payload(hex_data, askey, devaddr, dir_down, fcnt_hex):
+    print("## FRMPayload   : [x%s]" % hex_data)
+    if f_verbose:
+        print("  ** Detail:")
+        print("    buf_hex = %s" % hex_data)
+        print("    key_hex = %s" % askey)
+        print("    devaddr = %s" % ret["devaddr"])
+        print("    dir_down = %d" % dir_down)
+        print("    fcnt = %s" % fcnt_hex)
+    if not askey:
+        return error("askey must be specified.")
+    m = LoRaMacPayloadEncrypt(hex_data, askey,
+                                devaddr, dir_down, fcnt_hex)
+    m = binascii.b2a_hex(m)
+    print("  x %s" % " ".join(str2hexstr(m)))
+    return
+
+'''
 MACPayload parser
 
 - MACPayload
@@ -1006,20 +1026,8 @@ encrypted and must not exceed the maximum FRMPayload length.
             print("  Decrypted: [x %s]" % m)
             parse_mac_cmd(msg_dir, str2hexstr(m))
             return
-        print("## FRMPayload   : [x%s]" % frmpl_hex)
-        if f_verbose:
-            print("  ** Detail:")
-            print("    buf_hex = %s" % frmpl_hex)
-            print("    key_hex = %s" % askey)
-            print("    devaddr = %s" % ret["devaddr"])
-            print("    dir_down = %d" % dir_down)
-            print("    fcnt = %s" % fcnt_hex)
-        if not askey:
-            return error("askey must be specified.")
-        m = LoRaMacPayloadEncrypt(frmpl_hex, askey,
-                                    ret["devaddr"], dir_down, fcnt_hex)
-        m = binascii.b2a_hex(m)
-        print("  x %s" % " ".join(str2hexstr(m)))
+        #
+        parse_frm_payload(frmpl_hex, askey, ret["devaddr"], dir_down, fcnt_hex)
         return
     #
     return
