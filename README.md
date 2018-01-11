@@ -5,9 +5,8 @@ This is a parser tool of the LoRaWAN PHY payload.
 
 ## Requirement
 
-Python 2.7 is required.
-
-Not tested with Python 3.x.
+- Python 2.7 is required.  Not tested with Python 3.x.
+- pycrypto
 
 ## Usage
 
