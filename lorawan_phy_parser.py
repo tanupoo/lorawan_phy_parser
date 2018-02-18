@@ -1024,7 +1024,7 @@ encrypted and must not exceed the maximum FRMPayload length.
                                       ret["devaddr"], dir_down, fcnt_hex)
             m = binascii.b2a_hex(m)
             print("  Decrypted: [x %s]" % m)
-            parse_mac_cmd(msg_dir, str2hexstr(m))
+            parse_mac_cmd(msg_dir, hexstr2array(m))
             return
         #
         parse_frm_payload(frmpl_hex, askey, ret["devaddr"], dir_down, fcnt_hex)
