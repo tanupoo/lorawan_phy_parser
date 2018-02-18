@@ -1004,7 +1004,7 @@ encrypted and must not exceed the maximum FRMPayload length.
         # decryption of the FRMPayload is needed.
         #
         dir_down = 0 if msg_dir == MSGDIR_UP else 1
-        fcnt_hex = (xfcnt + hex(ret["fcnt"])[2:]).rjust(8,"0")
+        fcnt_hex = xfcnt.rjust(4,"0") + hex(ret["fcnt"])[2:].rjust(4,"0")
         frmpl_hex = "".join(hex_data[offset:])
         if ret["fport"] == 0:
             if ret["foptslen"]:
