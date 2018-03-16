@@ -335,6 +335,27 @@ integer of 6 bits with a minimum value of -32 and a
 maximum value of 31.
 """)
 
+def parse_maccmd_Frequency(hex_data):
+    '''
+    it is called from:
+        - parse_maccmd_NewChannelReq()
+        - parse_maccmd_PingSlotChannelReq()
+    '''
+    offset = 0
+    x_Freq = "".join(hex_data[offset:offset+3][::-1])
+    i_Freq = int(x_Freq, 16)
+    print("    Freq   : %d kHz [x%s]" % (i_Freq, x_Freq))
+    print_detail("""
+The frequency (Freq) field is a 24 bits unsigned integer. The actual channel
+frequency in Hz is 100 x Freq whereby values representing frequencies
+below 100 MHz are reserved for future use. 
+A Freq value of 0 disables the channel. The end-device MUST
+check that the frequency is actually allowed by its radio
+hardware and return an error
+otherwise.
+""")
+    return 3
+
 def parse_maccmd_NewChannelReq(hex_data):
     offset = 0
     #
@@ -357,19 +378,7 @@ device may have to store more than 16 channel definitions.
 """)
     offset += 1
     #
-    x_Freq = "".join(hex_data[offset:offset+3][::-1])
-    i_Freq = int(x_Freq, 16)
-    print("    Freq   : %d kHz [x%s]" % (i_Freq, x_Freq))
-    print_detail("""
-The frequency (Freq) field is a 24 bits unsigned integer. The actual channel
-frequency in Hz is 100 x Freq whereby values representing frequencies
-below 100 MHz are reserved for future use. 
-A Freq value of 0 disables the channel. The end-device MUST
-check that the frequency is actually allowed by its radio
-hardware and return an error
-otherwise.
-""")
-    offset += 3
+    offset += parse_maccmd_Frequency(hex_data)
     #
     x_DrRange = hex_data[offset]
     b_DrRange = hex2bin(x_DrRange)
@@ -518,10 +527,46 @@ def parse_maccmd_PingSlotInfoAns(hex_data):
     pass
 
 def parse_maccmd_PingSlotChannelReq(hex_data):
-    print("    NOT YET IMPLEMENTED.")
+    offset = 0
+    #
+    offset = parse_maccmd_Frequency(hex_data)
+    #
+    x_DataRate = hex_data[offset]
+    b_DataRate = hex2bin(x_DataRate)
+    b_RFU = b_DataRate[:4]
+    b_datarate = b_DataRate[4:]
+    i_RFU = int(b_RFU, 2)
+    i_datarate = int(b_datarate, 2)
+    print("    DataRate: [x%s]" % (x_DataRate))
+    print("      RFU      : %d [b%s]" % (i_RFU, b_RFU))
+    print("      data rate: %d [b%s]" % (i_datarate, b_datarate))
+    print_detail("""
+The “data rate” subfield is the index of the Data Rate used
+for the ping-slot downlinks.
+""")
 
 def parse_maccmd_PingSlotChannelAns(hex_data):
-    print("    NOT YET IMPLEMENTED.")
+    offset = 0
+    #
+    x_Status = hex_data[offset]
+    b_Status = hex2bin(x_Status)
+    b_RFU = b_Status[:6]
+    b_datarate_ok = b_Status[6:7]
+    b_chfreq_ok = b_Status[7:8]
+    print("    DataRate: [x%s]" % (b_Status))
+    print("      RFU          : [b%s]" % (b_RFU))
+    print("      data rate ok : %s" % (b_datarate_ok))
+    print("      ch freq ok   : %s" % (b_chfreq_ok))
+    print_detail("""
+for data rate ok,
+if 0, Data rate ok: The designated data rate is not defined for this end device,
+the previous data rate is kept.
+if 1, The data rate is compatible with the possibilities of the end device
+The device cannot receiveon this frequency
+This frequency can be used by the end-device
+If either of those 2 bits equals 0, the command did not succeed and the
+ping-slot parameters have not been modified.
+""")
 
 def parse_maccmd_BeaconTimingReq(hex_data):
     print_detail("""
@@ -560,6 +605,8 @@ content is 0.
 """)
 
 def parse_maccmd_BeaconFreqReq(hex_data):
+    offset = 0
+    #
     x_Freq = "".join(hex_data[offset:offset+3][::-1])
     i_Freq = int(x_Freq, 16)
     print("    Freq   : %d kHz [x%s]" % (i_Freq, x_Freq))
@@ -752,7 +799,7 @@ mac_cmd_tab = {
         },
         MSGDIR_DOWN: {
             "name": "PingSlotChannelReq",
-            "size": 1,
+            "size": 4,
             "parser": parse_maccmd_PingSlotChannelReq
         }
     },
