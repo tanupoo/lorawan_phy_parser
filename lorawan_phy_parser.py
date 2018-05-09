@@ -947,7 +947,7 @@ MACPayload parser
         |   ADR  |     |  RFT or  |
     ADR | ACKReq | ACK | Class B  | FOptsLen
 '''
-def parse_mac_payload(msg_dir, hex_data, nsekey, askey, xfcnt):
+def parse_mac_payload(msg_dir, hex_data, nskey, askey, xfcnt):
     global f_verbose
     ret = {}
     ret["devaddr"] = "".join(hex_data[0:4][::-1])
@@ -1061,13 +1061,13 @@ encrypted and must not exceed the maximum FRMPayload length.
             if f_verbose:
                 print("  ** Detail:")
                 print("    buf_hex = %s" % frmpl_hex)
-                print("    key_hex = %s" % nsekey)
+                print("    key_hex = %s" % nskey)
                 print("    devaddr = %s" % ret["devaddr"])
                 print("    dir_down = %d" % dir_down)
                 print("    fcnt = %s" % fcnt_hex)
-            if not nsekey:
-                return error("nsekey must be specified.")
-            m = LoRaMacPayloadEncrypt(frmpl_hex, nsekey,
+            if not nskey:
+                return error("nskey must be specified.")
+            m = LoRaMacPayloadEncrypt(frmpl_hex, nskey,
                                       ret["devaddr"], dir_down, fcnt_hex)
             m = binascii.b2a_hex(m)
             print("  Decrypted: [x %s]" % m)
@@ -1129,7 +1129,7 @@ PHYPayload parser
     MHDR |   JoinReq  | MIC
     MHDR |   JoinRes  | MIC
 '''
-def parse_phy_payload(hexstr, nsekey=None, askey=None, xfcnt=""):
+def parse_phy_payload(hexstr, nskey=None, askey=None, xfcnt=""):
     hex_data = hexstr2array(hexstr)
     print("=== PHYPayload ===")
     print("[x %s]" % " ".join(hex_data))
@@ -1153,7 +1153,7 @@ def parse_phy_payload(hexstr, nsekey=None, askey=None, xfcnt=""):
     else:
         print("## MACPayload")
         try:
-            parse_mac_payload(msg_dir, payload, nsekey, askey, xfcnt)
+            parse_mac_payload(msg_dir, payload, nskey, askey, xfcnt)
         except Exception as e:
             print("Abort.")
             print(e)
@@ -1193,7 +1193,7 @@ def parse_args():
         help="a series or multiple of hex string.")
     p.add_argument("-b", action="store", dest="beacon_rfu", default=2,
         help="specify the number of bytes of the RFU in the beacon.")
-    p.add_argument("--nsekey", action="store", dest="nsekey", default="",
+    p.add_argument("--nskey", action="store", dest="nskey", default="",
         help="specify NwkSEncKey(v1.1) or NwkSKey(v1.0.2).")
     p.add_argument("--askey", action="store", dest="askey", default="",
         help="specify AppSKey.")
@@ -1226,11 +1226,11 @@ if __name__ == "__main__" :
         test_regress()
         exit(1)
     #
-    nsekey_hex = None
-    if opt.nsekey:
-        nsekey_hex = str2hexstr(opt.nsekey)
+    nskey_hex = None
+    if opt.nskey:
+        nskey_hex = str2hexstr(opt.nskey)
     else:
-        nsekey_hex = os.getenv("LORAWAN_NSEKEY")
+        nskey_hex = os.getenv("LORAWAN_NSKEY")
     #
     askey_hex = None
     if opt.askey:
@@ -1240,11 +1240,11 @@ if __name__ == "__main__" :
     #
     if hex_str == "-":
         for i in sys.stdin:
-            parse_phy_payload(str2hexstr(i), nsekey=nsekey_hex,
+            parse_phy_payload(str2hexstr(i), nskey=nskey_hex,
                               askey=askey_hex, xfcnt=opt.xfcnt)
         exit(1)
     else:
         parse_phy_payload(hex_str,
-                          nsekey=nsekey_hex, askey=askey_hex,
+                          nskey=nskey_hex, askey=askey_hex,
                           xfcnt=opt.xfcnt)
 
