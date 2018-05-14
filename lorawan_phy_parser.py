@@ -9,6 +9,7 @@ import re
 import argparse
 from LoRaMacPayloadEncrypt import LoRaMacPayloadEncrypt
 import binascii
+from lorawan_cipher import lorawan_gen_key, lorawan_encrypt
 
 MIC_LEN = 4
 MSGDIR_DOWN = "down"
@@ -1099,14 +1100,25 @@ def parse_joinreq(hex_data):
                                          "".join(devnonce[::-1])))
 
 '''
-JoinRes parser
+JoinAccept parser
 
         3    |   3   |    4    |     1      |    1    |  (16)
     AppNonce | NetID | DevAddr | DLSettings | RxDelay | (CFList)
 
 '''
-def parse_joinres(hex_data):
+def parse_joinaccept(hex_data, akey_hex, major=0):
     # XXX endian check is not yet ?
+    if f_verbose:
+        print("  ** Detail:")
+        print("    hex_data = %s" % hex_data)
+        print("    akey_hex = %s" % akey_hex)
+        print("    major = %d" % major)
+    if not akey_hex:
+        return error("akey must be specified.")
+    m = lorawan_encrypt(binascii.a2b_hex(akey_hex),
+                        binascii.a2b_hex("".join(hex_data)))
+    m = binascii.b2a_hex(m)
+    print("  Decrypted: [x %s]" % m)
     appnonce = hex_data[0:3]
     netid = hex_data[3:6]
     devaddr = hex_data[6:10]
@@ -1129,7 +1141,7 @@ PHYPayload parser
     MHDR |   JoinReq  | MIC
     MHDR |   JoinRes  | MIC
 '''
-def parse_phy_payload(hexstr, nskey=None, askey=None, xfcnt=""):
+def parse_phy_payload(hexstr, nskey=None, askey=None, akey=None, xfcnt=""):
     hex_data = hexstr2array(hexstr)
     print("=== PHYPayload ===")
     print("[x %s]" % " ".join(hex_data))
@@ -1148,8 +1160,8 @@ def parse_phy_payload(hexstr, nskey=None, askey=None, xfcnt=""):
         print("## JoinReq")
         parse_joinreq(payload)
     elif mtype == "001":
-        print("## JoinRes")
-        parse_joinres(payload)
+        print("## JoinAccept")
+        parse_joinaccept(payload, akey)
     else:
         print("## MACPayload")
         try:
@@ -1197,6 +1209,8 @@ def parse_args():
         help="specify NwkSEncKey(v1.1) or NwkSKey(v1.0.2).")
     p.add_argument("--askey", action="store", dest="askey", default="",
         help="specify AppSKey.")
+    p.add_argument("--akey", action="store", dest="akey", default="",
+        help="specify AppKey.")
     p.add_argument("--xfcnt", action="store", dest="xfcnt", default="0000",
         help="specify the most significant 16-bit of the FCnt in hex.")
     p.add_argument("-i", action="store_true", dest="f_ignore_error",
@@ -1238,13 +1252,19 @@ if __name__ == "__main__" :
     else:
         askey_hex = os.getenv("LORAWAN_ASKEY")
     #
+    akey_hex = None
+    if opt.akey:
+        akey_hex = str2hexstr(opt.akey)
+    else:
+        akey_hex = os.getenv("LORAWAN_AKEY")
+    #
     if hex_str == "-":
         for i in sys.stdin:
             parse_phy_payload(str2hexstr(i), nskey=nskey_hex,
-                              askey=askey_hex, xfcnt=opt.xfcnt)
+                              askey=askey_hex, akey=akey_hex, xfcnt=opt.xfcnt)
         exit(1)
     else:
         parse_phy_payload(hex_str,
-                          nskey=nskey_hex, askey=askey_hex,
+                          nskey=nskey_hex, askey=askey_hex, akey=akey_hex,
                           xfcnt=opt.xfcnt)
 
