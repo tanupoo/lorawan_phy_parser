@@ -151,6 +151,21 @@ lorawan_decrypt()
 }
 
 void
+dt_repeat_8()
+{
+	/* 0x00 ... 0xff x 16 */
+	for (int i = 0; i <= 0xff; i++) {
+		for (int j = 0; j < 16; j++) {
+			key[j] = (uint8_t)(i&0xff);
+		}
+		if (f_debug)
+			dump16("dict_key=", key);
+		lorawan_decrypt();
+		check();
+	}
+}
+
+void
 dt_repeat_16()
 {
 	/* 0x0000, 0x0101, 0x0202 ... 0xfefe, 0xffff x 8 */
@@ -174,6 +189,8 @@ dt_repeat_16()
 			key[j] = (uint8_t)((v[i]>>8)&0xff);
 			key[j+1] = (uint8_t)(v[i]&0xff);
 		}
+		if (f_debug)
+			dump16("dict_key=", key);
 		lorawan_decrypt();
 		check();
 	}
@@ -200,6 +217,8 @@ dt_repeat_32()
 			key[j+2] = (uint8_t)((v[i]>> 8)&0xff);
 			key[j+3] = (uint8_t)(v[i]&0xff);
 		}
+		if (f_debug)
+			dump16("dict_key=", key);
 		lorawan_decrypt();
 		check();
 	}
@@ -215,6 +234,8 @@ dt_set_01()
 		key[i*4+2] = (uint8_t)((v[i]>> 8)&0xff);
 		key[i*4+3] = (uint8_t)(v[i]&0xff);
 	}
+	if (f_debug)
+		dump16("dict_key=", key);
 	lorawan_decrypt();
 	check();
 }
@@ -229,6 +250,8 @@ dt_set_02()
 		key[i*4+2] = (uint8_t)((v[i]>> 8)&0xff);
 		key[i*4+3] = (uint8_t)(v[i]&0xff);
 	}
+	if (f_debug)
+		dump16("dict_key=", key);
 	lorawan_decrypt();
 	check();
 }
@@ -243,27 +266,35 @@ dt_set_03()
 		key[i*4+2] = (uint8_t)((v[i]>> 8)&0xff);
 		key[i*4+3] = (uint8_t)(v[i]&0xff);
 	}
+	if (f_debug)
+		dump16("dict_key=", key);
 	lorawan_decrypt();
 	check();
+}
+
+void
+dt_set_fixed()
+{
+	char *sv[] = { "00112233445566778899aabbccddeeff" };
+	for (int i = 0; i < sizeof(sv)/sizeof(sv[0]); i++) {
+		a2b_hex16(sv[i], key);
+		if (f_debug)
+			dump16("dict_key=", key);
+		lorawan_decrypt();
+		check();
+	}
 }
 
 int
 dict_trial()
 {
-	/* 0x00 ... 0xff x 16 */
-	for (int i = 0; i <= 0xff; i++) {
-		for (int j = 0; j < 16; j++) {
-			key[j] = (uint8_t)(i&0xff);
-		}
-		lorawan_decrypt();
-		check();
-	}
-
+	dt_repeat_8();
 	dt_repeat_16();
 	dt_repeat_32();
 	dt_set_01();
 	dt_set_02();
 	dt_set_03();
+	dt_set_fixed();
 
 	return 0;
 }
