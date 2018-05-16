@@ -916,9 +916,9 @@ def parse_frm_payload(hex_data, askey, devaddr, dir_down, fcnt_hex):
     print("## FRMPayload   : [x%s]" % hex_data)
     if f_verbose:
         print("  ** Detail:")
-        print("    buf_hex = %s" % hex_data)
-        print("    key_hex = %s" % askey)
-        print("    devaddr = %s" % ret["devaddr"])
+        print("    hex_data = %s" % hex_data)
+        print("    askey = %s" % askey)
+        print("    devaddr = %s" % devaddr)
         print("    dir_down = %d" % dir_down)
         print("    fcnt = %s" % fcnt_hex)
     if not askey:
