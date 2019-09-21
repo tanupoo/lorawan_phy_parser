@@ -3,6 +3,8 @@ LoRaWAN PHY Payload Parser
 
 This is a parser tool of the LoRaWAN PHY payload.
 
+PLEASE USE [lorawan-parser](https://github.com/tanupoo/lorawan-parser) instead.  THIS IS NOT MAINTAINED.
+
 ## Requirement
 
 - Python 2.7 is required.  Not tested with Python 3.x.
