@@ -909,6 +909,9 @@ def parse_mhdr(hex_data):
     #
     return mtype
 
+def bin2hexarray(m):
+    return ["%02x" % m[i] for i in range(0,len(m),2)]
+
 '''
 FRMPayload parser
 '''
@@ -925,8 +928,7 @@ def parse_frm_payload(hex_data, askey, devaddr, dir_down, fcnt_hex):
         return error("askey must be specified.")
     m = LoRaMacPayloadEncrypt(hex_data, askey,
                                 devaddr, dir_down, fcnt_hex)
-    m = binascii.b2a_hex(m)
-    print("  x %s" % " ".join(str2hexstr(m)))
+    print("  x %s" % " ".join(bin2hexarray(m)))
     return
 
 '''
@@ -1164,12 +1166,15 @@ def parse_phy_payload(hexstr, nskey=None, askey=None, akey=None, xfcnt=""):
         parse_joinaccept(payload, akey)
     else:
         print("## MACPayload")
-        try:
+        if opt.debug_level > 0:
             parse_mac_payload(msg_dir, payload, nskey, askey, xfcnt)
-        except Exception as e:
-            print("Abort.")
-            print(e)
-            exit(1)
+        else:
+            try:
+                parse_mac_payload(msg_dir, payload, nskey, askey, xfcnt)
+            except Exception as e:
+                print("Abort.")
+                print(e)
+                exit(1)
     #
     print("## MIC          : %s" % ("".join(mic))) # XXX endian ?
 
@@ -1224,47 +1229,43 @@ def parse_args():
     return args
 
 
-'''
-test code
-'''
-if __name__ == "__main__" :
-    opt = parse_args()
-    global f_verbose
-    global f_ignore_error
-    f_verbose = opt.f_verbose
-    f_ignore_error = opt.f_ignore_error
-    #
-    hex_str = str2hexstr("".join(opt.hex_str))
-    #
-    if hex_str == "test":
-        test_regress()
-        exit(1)
-    #
-    nskey_hex = None
-    if opt.nskey:
-        nskey_hex = str2hexstr(opt.nskey)
-    else:
-        nskey_hex = os.getenv("LORAWAN_NSKEY")
-    #
-    askey_hex = None
-    if opt.askey:
-        askey_hex = str2hexstr(opt.askey)
-    else:
-        askey_hex = os.getenv("LORAWAN_ASKEY")
-    #
-    akey_hex = None
-    if opt.akey:
-        akey_hex = str2hexstr(opt.akey)
-    else:
-        akey_hex = os.getenv("LORAWAN_AKEY")
-    #
-    if hex_str == "-":
-        for i in sys.stdin:
-            parse_phy_payload(str2hexstr(i), nskey=nskey_hex,
-                              askey=askey_hex, akey=akey_hex, xfcnt=opt.xfcnt)
-        exit(1)
-    else:
-        parse_phy_payload(hex_str,
-                          nskey=nskey_hex, askey=askey_hex, akey=akey_hex,
-                          xfcnt=opt.xfcnt)
+opt = parse_args()
+global f_verbose
+global f_ignore_error
+f_verbose = opt.f_verbose
+f_ignore_error = opt.f_ignore_error
+#
+hex_str = str2hexstr("".join(opt.hex_str))
+#
+if hex_str == "test":
+    test_regress()
+    exit(1)
+#
+nskey_hex = None
+if opt.nskey:
+    nskey_hex = str2hexstr(opt.nskey)
+else:
+    nskey_hex = os.getenv("LORAWAN_NSKEY")
+#
+askey_hex = None
+if opt.askey:
+    askey_hex = str2hexstr(opt.askey)
+else:
+    askey_hex = os.getenv("LORAWAN_ASKEY")
+#
+akey_hex = None
+if opt.akey:
+    akey_hex = str2hexstr(opt.akey)
+else:
+    akey_hex = os.getenv("LORAWAN_AKEY")
+#
+if hex_str == "-":
+    for i in sys.stdin:
+        parse_phy_payload(str2hexstr(i), nskey=nskey_hex,
+                            askey=askey_hex, akey=akey_hex, xfcnt=opt.xfcnt)
+    exit(1)
+else:
+    parse_phy_payload(hex_str,
+                        nskey=nskey_hex, askey=askey_hex, akey=akey_hex,
+                        xfcnt=opt.xfcnt)
 

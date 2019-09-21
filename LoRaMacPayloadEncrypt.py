@@ -1,8 +1,6 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from Crypto.Cipher import AES
-from Crypto import Random
+from AES_ECB import AES_ECB
 import binascii
 
 # The direction field (Dir) is 0 for uplink frames and 1 for downlink frames.
@@ -40,11 +38,6 @@ def LoRaMacPayloadEncrypt(buf_hex, key_hex, devaddr_hex, dir_down, fcnt_hex,
     size = len(buf)
     encBuffer = bytearray(size)
 
-    cipher = AES.new(key, AES.MODE_ECB)
-
-    def aes_encrypt_block(aBlock):
-        return bytearray(cipher.encrypt(str(aBlock)))
-
     aBlock = bytearray(16)
     aBlock[0] = 1
     aBlock[5] = dir_down
@@ -70,10 +63,12 @@ def LoRaMacPayloadEncrypt(buf_hex, key_hex, devaddr_hex, dir_down, fcnt_hex,
     bufferIndex = 0
     ctr = 1
 
+    cipher = AES_ECB(key)
+
     while size >= 16:
         aBlock[15] = ctr & 0xff
         ctr += 1
-        sBlock = aes_encrypt_block(aBlock)
+        sBlock = bytearray(cipher.encrypt(aBlock))
         for i in range(16):
             encBuffer[bufferIndex + i] = buf[bufferIndex + i] ^ sBlock[i]
         size -= 16
@@ -81,7 +76,7 @@ def LoRaMacPayloadEncrypt(buf_hex, key_hex, devaddr_hex, dir_down, fcnt_hex,
 
     if size > 0:
         aBlock[15] = ctr & 0xff
-        sBlock = aes_encrypt_block(aBlock)
+        sBlock = bytearray(cipher.encrypt(aBlock))
         for i in range(size):
             encBuffer[bufferIndex + i] = buf[bufferIndex + i] ^ sBlock[i]
 
