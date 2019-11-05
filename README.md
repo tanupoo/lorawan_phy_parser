@@ -1,9 +1,9 @@
-LoRaWAN PHY Payload Parser
-==========================
+(DEPRECATED) LoRaWAN PHY Payload Parser
+=======================================
+
+PLEASE USE [lorawan-parser](https://github.com/tanupoo/lorawan-parser) instead.  THIS IS NOT MAINTAINED ANY MORE.
 
 This is a parser tool of the LoRaWAN PHY payload.
-
-PLEASE USE [lorawan-parser](https://github.com/tanupoo/lorawan-parser) instead.  THIS IS NOT MAINTAINED.
 
 ## Requirement
 
